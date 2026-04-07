@@ -121,6 +121,8 @@ Key rules in brief:
 | TDD patterns | `test-driven-development` |
 | Clean code standards | `clean-code` |
 | Static analysis and quality gates | `code-quality-tools` |
+| Caching (Redis cache-aside, invalidation) | `caching-strategy` |
+| Event-driven pipeline (Redis Streams) | `event-driven-patterns` |
 | Docstrings, READMEs, changelog | `documentation-standards` |
 
 ## Coding Rules

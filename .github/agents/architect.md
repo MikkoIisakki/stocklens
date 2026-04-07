@@ -53,6 +53,9 @@ See `documentation-standards` skill for ADR format and folder structure.
 | `design-patterns` | Which patterns apply to a given design problem |
 | `documentation-standards` | ADR format, diagram conventions, doc folder structure |
 | `clean-architecture` | Dependency rule, layer boundaries, ports and adapters, fitness functions |
+| `caching-strategy` | When to cache, TTL decisions, invalidation design, Redis patterns |
+| `event-driven-patterns` | Redis Streams design, consumer group topology, backpressure |
+| `performance-testing` | NFR validation approach, query analysis, load test design |
 
 Do not reference `postgres-patterns` (implementation detail for engineer) or `docker-compose-patterns` (for devops).
 

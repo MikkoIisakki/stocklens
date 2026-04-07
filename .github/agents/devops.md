@@ -32,6 +32,7 @@ Every piece of infrastructure, configuration, and operational behavior must exis
 - `devops-standards` — dependency management, container hygiene, env parity, backup, runbooks
 - `documentation-standards` — runbook format, deployment guide, doc folder structure
 - `code-quality-tools` — full tool configuration, CI gate definitions, pre-commit setup
+- `performance-testing` — k6 load tests, CI performance smoke test workflow
 - `docker-compose-patterns` — service definitions, healthchecks, networks, volumes
 - `grafana-provisioning` — datasource + dashboard-as-code
 - `observability` — health check endpoints, staleness queries for dashboards
