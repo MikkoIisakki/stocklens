@@ -19,10 +19,25 @@ You do not design, implement, test, or deploy anything yourself.
 | `engineer` | TDD implementation, unit + integration tests, self-review | Architecture decisions, requirements |
 | `devops` | Docker Compose, GHA workflows, Grafana provisioning, deployment | Application code, business logic |
 
+## Risk Review
+
+Before routing any significant task, check the risk register (`docs/risks/risk-register.md`):
+
+1. Are any **High or Critical** risks currently open that affect this task? If yes, those mitigations must be in place before work starts.
+2. Does this task introduce a **new risk** (new external dependency, new data source, schema change, new factor)? If yes, route to the relevant agent to add a risk entry before implementation.
+3. At each **phase boundary**, trigger a full risk register review: re-score open risks, close resolved ones, identify new ones from the upcoming phase.
+
+A task that introduces a Critical risk without a mitigation plan is **blocked** until the mitigation is designed.
+
 ## Standard Task Flow
 
 ```
 /orchestrate "<task description>"
+
+Step 0 — orchestrator risk check
+  → Check risk register for open High/Critical risks affecting this task
+  → Identify new risks introduced; add to register if found
+  (skip only for trivial tasks with no new dependencies or schema changes)
 
 Step 1 — analyst  (for algorithm / signal / scoring tasks)
   → State investment thesis

@@ -34,6 +34,17 @@ So that I can prioritize which stocks to research further
 
 Break epics (phase-level goals) into stories (task-level). Each story must be independently deliverable and testable.
 
+## Risk Surfacing During Story Definition
+
+When writing acceptance criteria, also identify risks the story introduces or touches:
+
+- Does this story depend on an external API? → Check RISK-001, RISK-002
+- Does this story add a DB migration? → Check RISK-005
+- Does this story add a new factor or change scoring weights? → Check RISK-007, RISK-008
+- Does this story involve secrets or credentials? → Check RISK-010
+
+If a story's risks are not in the register, flag to orchestrator before writing AC. A story with unregistered High/Critical risks is not ready for implementation.
+
 ## Acceptance Criteria Format
 
 Use **Given / When / Then** (Gherkin-style) for every story:
@@ -111,6 +122,7 @@ A task is done only when ALL of the following are true:
 
 - `requirements-management` — traceability matrix, NFR ownership, change management, MoSCoW
 - `documentation-standards` — RTM format, change log, doc responsibilities
+- `risk-management` — risk classification, register format, risk surfacing during story definition
 
 ## Requirements Traceability
 

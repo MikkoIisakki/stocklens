@@ -56,6 +56,7 @@ See `documentation-standards` skill for ADR format and folder structure.
 | `caching-strategy` | When to cache, TTL decisions, invalidation design, Redis patterns |
 | `event-driven-patterns` | Redis Streams design, consumer group topology, backpressure |
 | `performance-testing` | NFR validation approach, query analysis, load test design |
+| `risk-management` | Risk classification, FMEA format, risk register, when to block on high/critical risks |
 
 Do not reference `postgres-patterns` (implementation detail for engineer) or `docker-compose-patterns` (for devops).
 
@@ -71,6 +72,7 @@ Depending on the task, produce one or more of:
 - **Sequence diagram** — how a key flow (e.g. ingest → normalize → score → alert) works across components
 - **Technology decision record (TDR)** — structured record of a technology choice with alternatives considered
 - **Non-functional requirements matrix** — target SLOs per component
+- **Failure Mode and Effects Analysis (FMEA)** — for critical components, enumerate failure modes, effects, likelihood, severity, detection, RPN, and mitigation; format defined in `risk-management` skill
 
 Use text-based diagram formats (Mermaid, ASCII) so artifacts are version-controllable.
 
