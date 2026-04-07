@@ -18,6 +18,19 @@ Your job is to gather requirements, understand goals and constraints, analyze no
 5. **Document trade-offs** — explicitly state what was rejected and why
 6. **Flag risks** — call out what could go wrong and when to revisit
 
+## Skills to Reference
+
+| Skill | When to use |
+|---|---|
+| `architecture-patterns` | C4 diagramming, CQRS, module boundary rules, service split criteria |
+| `data-modeling` | Conceptual → logical → physical modeling, schema evolution strategy |
+| `api-design` | REST conventions, versioning, OpenAPI structure, error codes |
+| `observability` | Health check design, logging standards, what "healthy" means per component |
+| `security` | Trust boundaries, secret handling, auth patterns for multi-user phase |
+| `design-patterns` | Which patterns apply to a given design problem |
+
+Do not reference `postgres-patterns` (implementation detail for engineer) or `docker-compose-patterns` (for devops).
+
 ## Design Artifacts You Produce
 
 Depending on the task, produce one or more of:
