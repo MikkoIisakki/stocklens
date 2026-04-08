@@ -13,7 +13,7 @@ Goal: reliable daily price ingestion for US + Finnish markets, stored with full 
 
 | # | Task | Status | Notes |
 |---|---|---|---|
-| 1.1 | Project structure + Docker Compose | ⬜ Todo | `backend/` layout, `docker-compose.yml`, `Makefile`, `pyproject.toml`, `.env.example` |
+| 1.1 | Project structure + Docker Compose | ✅ Done | `backend/` layout, `docker-compose.yml`, `Makefile`, `pyproject.toml`, `.env.example` |
 | 1.2 | DB schema — core tables | ⬜ Todo | `asset`, `daily_price`, `raw_source_snapshot`, `ingest_run` |
 | 1.3 | Ingest US EOD prices (yfinance) | ⬜ Todo | Top 50 S&P 500 + Nasdaq tech tickers |
 | 1.4 | Ingest Finnish EOD prices (yfinance, .HE) | ⬜ Todo | Helsinki exchange tickers |
