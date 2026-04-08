@@ -18,7 +18,7 @@ Goal: reliable daily price ingestion for US + Finnish markets, stored with full 
 | 1.3 | Ingest US EOD prices (yfinance) | ⬜ Todo | Top 50 S&P 500 + Nasdaq tech tickers |
 | 1.4 | Ingest Finnish EOD prices (yfinance, .HE) | ✅ Done | Helsinki exchange tickers; reuses full 1.3 pipeline |
 | 1.5 | Daily ingest scheduler | ✅ Done | APScheduler cron: FI 17:00 UTC, US 21:30 UTC; misfire_grace_time=3600 |
-| 1.6 | REST API — assets + price history | ⬜ Todo | `GET /v1/assets`, `GET /v1/assets/{symbol}/prices` |
+| 1.6 | REST API — assets + price history | ✅ Done | `GET /v1/assets[?market=US\|FI]`, `GET /v1/assets/{symbol}/prices[?from&to&limit]` |
 | 1.7 | Health check endpoint | ⬜ Todo | `GET /v1/health/ready` — returns `degraded` if last ingest > 25h ago |
 | 1.8 | Architecture fitness function tests | ⬜ Todo | `tests/architecture/test_dependency_rules.py` — enforce Clean Architecture boundaries in CI |
 
