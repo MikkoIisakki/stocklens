@@ -13,7 +13,9 @@ repos:
         args: [--fix]
       - id: ruff-format
 
-  # Type checking
+  # Type checking — only typed packages as additional_dependencies
+  # Untyped packages (yfinance, apscheduler, pandas-ta, etc.) are handled via
+  # [[tool.mypy.overrides]] ignore_missing_imports in pyproject.toml
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.14.0
     hooks:
@@ -23,3 +25,5 @@ repos:
           - pydantic
           - pydantic-settings
           - asyncpg-stubs
+          - fastapi
+          - httpx

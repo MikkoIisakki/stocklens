@@ -60,6 +60,8 @@ dev = [
 [tool.ruff]
 target-version = "py312"
 line-length = 100
+
+[tool.ruff.lint]
 select = [
     "E",    # pycodestyle errors
     "W",    # pycodestyle warnings
@@ -76,12 +78,12 @@ ignore = [
     "E501",  # line length handled by formatter
 ]
 
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
-
-[tool.ruff.isort]
-known-first-party = ["app"]
 
 [tool.mypy]
 python_version = "3.12"
@@ -92,6 +94,19 @@ disallow_any_generics = true
 warn_return_any = true
 warn_unused_ignores = true
 plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+# Packages that have no stubs or py.typed marker — suppress both
+# import-not-found (pre-commit env) and import-untyped (local env) silently.
+module = [
+    "yfinance",
+    "apscheduler",
+    "apscheduler.*",
+    "pandas_ta",
+    "fredapi",
+    "finnhub",
+]
+ignore_missing_imports = true
 
 [tool.bandit]
 skips = ["B101"]   # allow assert in tests

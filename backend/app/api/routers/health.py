@@ -12,7 +12,8 @@ from typing import Annotated
 import asyncpg
 from fastapi import APIRouter, Depends, Response
 
-from app.common.config import Settings, settings as default_settings
+from app.common.config import Settings
+from app.common.config import settings as default_settings
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/v1/health", tags=["health"])
