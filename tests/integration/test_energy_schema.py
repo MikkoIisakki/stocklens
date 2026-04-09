@@ -18,8 +18,12 @@ import pytest_asyncio
 
 
 @pytest_asyncio.fixture(loop_scope="function")
-async def conn() -> asyncpg.Connection:
-    """Fresh asyncpg connection per test using the function event loop."""
+async def conn(db_pool: asyncpg.Pool) -> asyncpg.Connection:
+    """Fresh asyncpg connection per test using the function event loop.
+
+    Depends on db_pool to guarantee migrations + seeds are applied before
+    any test in this module runs.
+    """
     database_url = os.environ["DATABASE_URL"]
     c = await asyncpg.connect(database_url)
     yield c

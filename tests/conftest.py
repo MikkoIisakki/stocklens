@@ -10,6 +10,7 @@ import pytest
 import pytest_asyncio
 
 MIGRATIONS_DIR = Path(__file__).parent.parent / "db" / "migrations"
+SEEDS_DIR = Path(__file__).parent.parent / "db" / "seeds"
 
 
 @pytest.fixture(scope="session")
@@ -27,11 +28,12 @@ async def db_pool() -> AsyncGenerator[asyncpg.Pool, None]:
     database_url = os.environ["DATABASE_URL"]
     pool: asyncpg.Pool = await asyncpg.create_pool(database_url, min_size=1, max_size=5)
 
-    # Apply all migrations in lexical order so tests have a real schema
+    # Apply all migrations then seeds in lexical order once per session
     async with pool.acquire() as conn:
         for migration in sorted(MIGRATIONS_DIR.glob("*.sql")):
-            sql = migration.read_text()
-            await conn.execute(sql)
+            await conn.execute(migration.read_text())
+        for seed in sorted(SEEDS_DIR.glob("*.sql")):
+            await conn.execute(seed.read_text())
 
     yield pool
     await pool.close()
