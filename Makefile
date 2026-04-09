@@ -26,9 +26,10 @@ seed:
 		docker compose exec -T db psql -U $${DB_USER:-stocks} -d $${DB_NAME:-stocks} -f "/dev/stdin" < "$$f"; \
 	done
 
-## Run tests with coverage
+## Run tests with coverage (requires: make up && make migrate && make seed)
 test:
-	docker compose run --rm api pytest tests/ -q
+	DATABASE_URL=postgresql://$${DB_USER:-stocks}:$${DB_PASSWORD:-changeme}@localhost:5433/$${DB_NAME:-stocks} \
+		uv run python -m pytest tests/ -q
 
 ## Run linter
 lint:

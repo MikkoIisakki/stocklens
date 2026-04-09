@@ -33,7 +33,7 @@ Goal: reliable daily data ingestion, storage with full audit trail, queryable vi
 
 | # | Task | Status | Notes |
 |---|---|---|---|
-| 2.1 | DB schema — electricity tables | ⬜ Todo | `energy_price` (hourly), `energy_region`, extend `ingest_run` |
+| 2.1 | DB schema — electricity tables | ✅ Done | `energy_price` (hourly), `energy_region`, extend `ingest_run`; seeds for 6 Nordpool regions |
 | 2.2 | Nordpool/ENTSO-E ingest | ⬜ Todo | Day-ahead hourly prices published ~13:00 CET daily |
 | 2.3 | Price normalisation (VAT, currency) | ⬜ Todo | EUR/MWh → c/kWh incl. Finnish VAT (25.5%) |
 | 2.4 | Daily price scheduler | ⬜ Todo | Cron at 13:30 CET (after Nordpool publishes) |

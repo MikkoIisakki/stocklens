@@ -7,6 +7,7 @@ from pathlib import Path
 
 import asyncpg
 import pytest
+import pytest_asyncio
 
 MIGRATIONS_DIR = Path(__file__).parent.parent / "db" / "migrations"
 
@@ -16,7 +17,7 @@ def event_loop_policy() -> asyncio.DefaultEventLoopPolicy:
     return asyncio.DefaultEventLoopPolicy()
 
 
-@pytest.fixture(scope="session")
+@pytest_asyncio.fixture(scope="session", loop_scope="session")
 async def db_pool() -> AsyncGenerator[asyncpg.Pool, None]:
     """Session-scoped connection pool pointed at the test database.
 
@@ -36,7 +37,7 @@ async def db_pool() -> AsyncGenerator[asyncpg.Pool, None]:
     await pool.close()
 
 
-@pytest.fixture()
+@pytest_asyncio.fixture(loop_scope="session")
 async def db_conn(db_pool: asyncpg.Pool) -> AsyncGenerator[asyncpg.Connection, None]:
     """Per-test connection wrapped in a rolled-back transaction.
 
