@@ -79,6 +79,7 @@ Step 8 — documentation update  (mandatory on every accepted task)
   → Update any ADR, data model doc, or API contract that was changed by this task
   → If a new risk was introduced, confirm the risk register entry was added
   → If an agent file or skill was changed, confirm the change is reflected in the relevant `.github/` file
+  → If project scope, domain coverage, or public-facing behaviour changed, update `README.md` (and any other README files in subdirectories) to reflect the current state — README files must never describe stale scope
   (This step is never skipped. A task is not complete until the plan and docs reflect the new state.)
 ```
 

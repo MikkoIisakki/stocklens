@@ -1,6 +1,11 @@
-# pulse
+# Pulse
 
-Stock following and screening system for US (S&P 500 top + Nasdaq tech) and Finnish (Helsinki exchange) markets.
+White-label screener platform. One codebase, multiple domain-focused apps — electricity spot prices, crypto, and stock screening. Each domain ships as a separately branded app built from shared infrastructure via configuration.
+
+**Domains:**
+- **Pulse Energy** — electricity spot price monitoring and cheap-hour alerts (Nordpool/ENTSO-E)
+- **Pulse Crypto** — crypto screening and price alerts (CoinGecko)
+- **Pulse Stocks** — stock screening for US and Finnish markets (Phase 4+, app store gated)
 
 ## Getting started
 
