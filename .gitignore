@@ -28,3 +28,6 @@ coverage.xml
 
 # Misc
 simple-architecture
+
+# MkDocs build output
+site/

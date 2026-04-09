@@ -1,4 +1,4 @@
-.PHONY: up down logs migrate seed test lint typecheck fresh shell-db
+.PHONY: up down logs migrate seed test lint typecheck fresh shell-db docs docs-serve
 
 ## Build and start all services
 up:
@@ -41,6 +41,14 @@ typecheck:
 ## Open a psql shell in the db container
 shell-db:
 	docker compose exec db psql -U $${DB_USER:-stocks} -d $${DB_NAME:-stocks}
+
+## Build documentation site to site/
+docs:
+	uv run mkdocs build --strict
+
+## Serve documentation locally with live reload (http://localhost:8001)
+docs-serve:
+	uv run mkdocs serve --dev-addr 0.0.0.0:8001
 
 ## Nuclear reset: wipe everything and start fresh
 fresh: down
