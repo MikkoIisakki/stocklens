@@ -1,13 +1,13 @@
 ---
 name: investment-analysis
-description: Fundamental and technical analysis theory, market mechanics, and stock selection frameworks that underpin the recommendator algorithm. Reference for the analyst agent.
+description: Fundamental and technical analysis theory, market mechanics, and stock selection frameworks that underpin the stocklens algorithm. Reference for the analyst agent.
 ---
 
 # Investment Analysis
 
 ## Two Schools — Why Both Matter
 
-The recommendator combines both approaches because neither is sufficient alone:
+The stocklens combines both approaches because neither is sufficient alone:
 
 - **Fundamental analysis** tells you *what* to buy — companies with improving business quality
 - **Technical analysis** tells you *when* to buy — when the market is confirming the thesis with price and volume
@@ -153,7 +153,7 @@ Academic factor research shows that combining **quality** (high ROE, low debt, s
 - **Short-term (days)**: mean reversion dominates — don't buy after large single-day spikes
 - **Medium-term (1–12 months)**: momentum dominates — buy what's working
 - **Long-term (> 1 year)**: mean reversion returns — valuation matters again
-- The recommendator targets the medium-term momentum window primarily
+- The stocklens targets the medium-term momentum window primarily
 
 ---
 

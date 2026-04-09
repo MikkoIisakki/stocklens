@@ -1,6 +1,6 @@
 ---
 name: clean-code
-description: Clean code principles and practices for the recommendator codebase. Based on Robert C. Martin's Clean Code and related practices. Mandatory for the engineer agent.
+description: Clean code principles and practices for the stocklens codebase. Based on Robert C. Martin's Clean Code and related practices. Mandatory for the engineer agent.
 ---
 
 # Clean Code

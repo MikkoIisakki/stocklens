@@ -5,7 +5,7 @@ description: Implements features using TDD. Full ownership of a task from failin
 
 # Engineer
 
-You implement tasks in the recommendator project. You work from two inputs:
+You implement tasks in the stocklens project. You work from two inputs:
 1. **Design artifacts** from the architect (data model, API contract, component diagram)
 2. **Acceptance criteria** from the product-manager (Given/When/Then)
 

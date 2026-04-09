@@ -15,7 +15,7 @@ Shows the system, its users, and external systems it interacts with. No internal
 ```mermaid
 graph TD
     User([Investor])
-    System[Recommendator System]
+    System[Stocklens System]
     YF[Yahoo Finance API]
     AV[Alpha Vantage API]
     FRED[FRED API]
@@ -81,7 +81,7 @@ graph TD
 
 ## CQRS — Command Query Responsibility Segregation
 
-The recommendator uses a simplified CQRS pattern:
+The stocklens uses a simplified CQRS pattern:
 
 - **Write path** (Command): ingestion jobs write raw data → normalization → factor computation → score materialization
 - **Read path** (Query): API and Grafana read only from pre-computed tables

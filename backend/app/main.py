@@ -27,7 +27,7 @@ def create_app() -> FastAPI:
     configure_logging()
 
     app = FastAPI(
-        title="Recommendator",
+        title="Stocklens",
         description="Stock recommendation system for US and Finnish markets.",
         version="0.1.0",
         lifespan=lifespan,

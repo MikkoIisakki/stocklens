@@ -1,6 +1,6 @@
 ---
 name: clean-architecture
-description: Clean Architecture principles applied to the recommendator system. Based on Robert C. Martin's Clean Architecture. Defines dependency rules, layer boundaries, and how domain logic is protected from infrastructure concerns. For architect use.
+description: Clean Architecture principles applied to the stocklens system. Based on Robert C. Martin's Clean Architecture. Defines dependency rules, layer boundaries, and how domain logic is protected from infrastructure concerns. For architect use.
 ---
 
 # Clean Architecture
@@ -42,7 +42,7 @@ Arrows point inward only. Domain never imports from storage. Scoring never impor
 
 ---
 
-## Layers in the Recommendator
+## Layers in the Stocklens
 
 ### Layer 1 — Domain Entities (`common/types.py`)
 Pure Python data classes and domain exceptions. No imports from any other project module. No framework dependencies.

@@ -1,9 +1,9 @@
-# Recommendator
+# Stocklens
 
 Stock screening system for **US** (S&P 500 top + Nasdaq tech) and **Finnish** (Helsinki exchange) markets.
 
 !!! note "Investment disclaimer"
-    Recommendator is a **screening and ranking tool**, not investment advice.
+    Stocklens is a **screening and ranking tool**, not investment advice.
     All output is for informational purposes only. Always do your own research
     before making any investment decision.
 

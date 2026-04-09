@@ -1,4 +1,4 @@
-# recommendator
+# stocklens
 
 Stock recommendation system for US (S&P 500 top + Nasdaq tech) and Finnish (Helsinki exchange) markets.
 

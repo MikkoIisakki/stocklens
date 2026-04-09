@@ -1,6 +1,6 @@
 ---
 name: scoring-model
-description: Weighted composite scoring formula, configurable weights, and action thresholds for the recommendator system.
+description: Weighted composite scoring formula, configurable weights, and action thresholds for the stocklens system.
 ---
 
 # Scoring Model

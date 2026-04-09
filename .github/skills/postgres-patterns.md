@@ -1,6 +1,6 @@
 ---
 name: postgres-patterns
-description: PostgreSQL schema conventions, indexing strategy, query patterns, and asyncpg usage for the recommendator project.
+description: PostgreSQL schema conventions, indexing strategy, query patterns, and asyncpg usage for the stocklens project.
 ---
 
 # PostgreSQL Patterns

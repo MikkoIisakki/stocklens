@@ -1,6 +1,6 @@
 ---
 name: grafana-provisioning
-description: How to provision Grafana datasources and dashboards as code for the recommendator project.
+description: How to provision Grafana datasources and dashboards as code for the stocklens project.
 ---
 
 # Grafana Provisioning
@@ -50,8 +50,8 @@ datasources:
 ```yaml
 apiVersion: 1
 providers:
-  - name: recommendator
-    folder: Recommendator
+  - name: stocklens
+    folder: Stocklens
     type: file
     disableDeletion: true
     updateIntervalSeconds: 30
@@ -78,7 +78,7 @@ Minimum required fields for a valid dashboard JSON:
   "panels": [],
   "refresh": "5m",
   "schemaVersion": 39,
-  "tags": ["recommendator"],
+  "tags": ["stocklens"],
   "templating": {"list": []},
   "time": {"from": "now-30d", "to": "now"},
   "timepicker": {},

@@ -1,6 +1,6 @@
 ---
 name: alert-patterns
-description: Alert rule definition, threshold evaluation, deduplication, and delivery patterns for the recommendator system.
+description: Alert rule definition, threshold evaluation, deduplication, and delivery patterns for the stocklens system.
 ---
 
 # Alert Patterns

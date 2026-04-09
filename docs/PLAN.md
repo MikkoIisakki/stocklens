@@ -1,4 +1,4 @@
-# Recommendator — Project Plan
+# Stocklens — Project Plan
 
 **Current phase**: Phase 1 — Data Foundation  
 **Status**: Not started (agent team setup complete, no application code written)

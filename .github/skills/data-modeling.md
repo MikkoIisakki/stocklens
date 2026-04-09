@@ -1,6 +1,6 @@
 ---
 name: data-modeling
-description: Conceptual, logical, and physical data modeling approach for the recommendator system. Schema evolution strategy and normalization trade-offs. For architect use.
+description: Conceptual, logical, and physical data modeling approach for the stocklens system. Schema evolution strategy and normalization trade-offs. For architect use.
 ---
 
 # Data Modeling

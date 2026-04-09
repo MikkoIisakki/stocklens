@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: Structured review rubric for correctness, regressions, test adequacy, migration safety, and security in recommendator.
+description: Structured review rubric for correctness, regressions, test adequacy, migration safety, and security in stocklens.
 ---
 
 # Code Review Skill

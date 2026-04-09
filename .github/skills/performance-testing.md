@@ -1,6 +1,6 @@
 ---
 name: performance-testing
-description: API load testing with k6, Python profiling, PostgreSQL query analysis, and performance benchmarking strategy for the recommendator system. For engineer and devops use.
+description: API load testing with k6, Python profiling, PostgreSQL query analysis, and performance benchmarking strategy for the stocklens system. For engineer and devops use.
 ---
 
 # Performance Testing

@@ -1,6 +1,6 @@
 ---
 name: test-driven-development
-description: TDD process, test pyramid, pytest conventions, fixture patterns, and how to write Given/When/Then tests for the recommendator codebase. For engineer use.
+description: TDD process, test pyramid, pytest conventions, fixture patterns, and how to write Given/When/Then tests for the stocklens codebase. For engineer use.
 ---
 
 # Test-Driven Development

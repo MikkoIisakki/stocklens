@@ -1,6 +1,6 @@
 ---
 name: requirements-management
-description: Requirements traceability, NFR ownership, change management, and MoSCoW prioritization for the recommendator project. Owned by the product-manager agent.
+description: Requirements traceability, NFR ownership, change management, and MoSCoW prioritization for the stocklens project. Owned by the product-manager agent.
 ---
 
 # Requirements Management

@@ -1,6 +1,6 @@
 ---
 name: risk-management
-description: Risk identification, classification, mitigation, and tracking for the recommendator project. Covers project, technical, domain, and operational risk categories. Used by orchestrator, architect, product-manager, and analyst.
+description: Risk identification, classification, mitigation, and tracking for the stocklens project. Covers project, technical, domain, and operational risk categories. Used by orchestrator, architect, product-manager, and analyst.
 ---
 
 # Risk Management

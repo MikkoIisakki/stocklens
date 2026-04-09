@@ -2,7 +2,7 @@
 
 ## Overview
 
-Recommendator is a **modular monolith** — a single deployable unit organised into well-defined internal modules. This keeps operations simple (one image, one deploy) while enforcing the same boundaries a microservices design would require.
+Stocklens is a **modular monolith** — a single deployable unit organised into well-defined internal modules. This keeps operations simple (one image, one deploy) while enforcing the same boundaries a microservices design would require.
 
 ```
 ┌─────────────────────────────────────────────────────┐

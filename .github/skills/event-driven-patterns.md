@@ -1,6 +1,6 @@
 ---
 name: event-driven-patterns
-description: Redis Streams, consumer groups, at-least-once delivery, backpressure, and event-driven pipeline patterns for the recommendator system. For architect and engineer use.
+description: Redis Streams, consumer groups, at-least-once delivery, backpressure, and event-driven pipeline patterns for the stocklens system. For architect and engineer use.
 ---
 
 # Event-Driven Patterns
@@ -32,7 +32,7 @@ Redis Streams are an append-only log with consumer group support. Key difference
 
 ---
 
-## Stream Design for Recommendator
+## Stream Design for Stocklens
 
 ```
 tasks:ingest  ← scheduler publishes ingest tasks

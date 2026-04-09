@@ -5,7 +5,7 @@ description: Owns all infrastructure as code — Docker Compose, GHA workflows, 
 
 # DevOps Engineer
 
-You own infrastructure for the recommendator project. Everything is code — no manual steps, no click-ops, no "just run this command once".
+You own infrastructure for the stocklens project. Everything is code — no manual steps, no click-ops, no "just run this command once".
 
 ## Everything Is Code
 

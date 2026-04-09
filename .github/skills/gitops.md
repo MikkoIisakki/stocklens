@@ -1,6 +1,6 @@
 ---
 name: gitops
-description: GitOps principles, branch strategy, environment promotion, image tagging, rollback, and drift prevention for the recommendator project.
+description: GitOps principles, branch strategy, environment promotion, image tagging, rollback, and drift prevention for the stocklens project.
 ---
 
 # GitOps
@@ -74,9 +74,9 @@ Never deploy `latest` in production. Every deployed image is traceable to a Git 
 
 ```
 # Tag format
-ghcr.io/owner/recommendator-backend:<git-sha>      # primary, immutable
-ghcr.io/owner/recommendator-backend:v0.2.0         # release tag
-ghcr.io/owner/recommendator-backend:main           # branch tip (dev only)
+ghcr.io/owner/stocklens-backend:<git-sha>      # primary, immutable
+ghcr.io/owner/stocklens-backend:v0.2.0         # release tag
+ghcr.io/owner/stocklens-backend:main           # branch tip (dev only)
 ```
 
 **GHA build + push workflow** (`image-build.yml`, Phase 3):
@@ -104,7 +104,7 @@ CD workflow SSHes to the Droplet, updates the compose file, and runs `docker com
 
 ```bash
 # On the Droplet — CD script
-cd /opt/recommendator
+cd /opt/stocklens
 git fetch origin
 git reset --hard origin/main          # Droplet matches main, always
 docker compose pull                   # pull new image tags

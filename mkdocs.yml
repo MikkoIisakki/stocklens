@@ -1,6 +1,6 @@
-site_name: Recommendator
+site_name: Stocklens
 site_description: Stock recommendation system for US and Finnish markets
-site_author: Recommendator contributors
+site_author: Stocklens contributors
 docs_dir: docs/user
 
 theme:
