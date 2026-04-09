@@ -1,6 +1,6 @@
 ---
 name: factor-research
-description: Academic and practitioner evidence behind each factor used in the stocklens scoring model. Provides the research basis for factor adoption, weighting, and retirement decisions.
+description: Academic and practitioner evidence behind each factor used in the pulse scoring model. Provides the research basis for factor adoption, weighting, and retirement decisions.
 ---
 
 # Factor Research

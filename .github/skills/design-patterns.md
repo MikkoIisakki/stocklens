@@ -1,6 +1,6 @@
 ---
 name: design-patterns
-description: Software design patterns applicable to the stocklens codebase. When to use each, and how they map to specific modules. For architect and engineer use.
+description: Software design patterns applicable to the pulse codebase. When to use each, and how they map to specific modules. For architect and engineer use.
 ---
 
 # Design Patterns

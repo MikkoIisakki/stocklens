@@ -1,6 +1,6 @@
 ---
 name: security
-description: Trust boundaries, secret management, API key handling, and auth patterns for the stocklens system across its deployment phases. For architect and devops use.
+description: Trust boundaries, secret management, API key handling, and auth patterns for the pulse system across its deployment phases. For architect and devops use.
 ---
 
 # Security

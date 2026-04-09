@@ -14,8 +14,8 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-org/stocklens.git
-cd stocklens
+git clone https://github.com/your-org/pulse.git
+cd pulse
 
 # 2. Create your environment file
 cp .env.example .env

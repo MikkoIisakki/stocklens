@@ -1,6 +1,6 @@
 ---
 name: grafana-provisioning
-description: How to provision Grafana datasources and dashboards as code for the stocklens project.
+description: How to provision Grafana datasources and dashboards as code for the pulse project.
 ---
 
 # Grafana Provisioning
@@ -50,7 +50,7 @@ datasources:
 ```yaml
 apiVersion: 1
 providers:
-  - name: stocklens
+  - name: pulse
     folder: Stocklens
     type: file
     disableDeletion: true
@@ -78,7 +78,7 @@ Minimum required fields for a valid dashboard JSON:
   "panels": [],
   "refresh": "5m",
   "schemaVersion": 39,
-  "tags": ["stocklens"],
+  "tags": ["pulse"],
   "templating": {"list": []},
   "time": {"from": "now-30d", "to": "now"},
   "timepicker": {},

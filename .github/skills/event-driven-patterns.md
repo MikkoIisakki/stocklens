@@ -1,6 +1,6 @@
 ---
 name: event-driven-patterns
-description: Redis Streams, consumer groups, at-least-once delivery, backpressure, and event-driven pipeline patterns for the stocklens system. For architect and engineer use.
+description: Redis Streams, consumer groups, at-least-once delivery, backpressure, and event-driven pipeline patterns for the pulse system. For architect and engineer use.
 ---
 
 # Event-Driven Patterns

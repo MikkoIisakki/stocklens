@@ -1,6 +1,6 @@
 ---
 name: caching-strategy
-description: When and what to cache, Redis cache patterns, TTL strategy, cache invalidation, and what must never be cached in the stocklens system. For architect and engineer use.
+description: When and what to cache, Redis cache patterns, TTL strategy, cache invalidation, and what must never be cached in the pulse system. For architect and engineer use.
 ---
 
 # Caching Strategy

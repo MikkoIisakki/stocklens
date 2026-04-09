@@ -1,6 +1,6 @@
 ---
 name: stock-data-sources
-description: API quirks, rate limits, and usage patterns for all free data sources used in the stocklens project.
+description: API quirks, rate limits, and usage patterns for all free data sources used in the pulse project.
 ---
 
 # Stock Data Sources

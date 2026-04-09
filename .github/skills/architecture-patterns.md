@@ -81,7 +81,7 @@ graph TD
 
 ## CQRS — Command Query Responsibility Segregation
 
-The stocklens uses a simplified CQRS pattern:
+The pulse uses a simplified CQRS pattern:
 
 - **Write path** (Command): ingestion jobs write raw data → normalization → factor computation → score materialization
 - **Read path** (Query): API and Grafana read only from pre-computed tables

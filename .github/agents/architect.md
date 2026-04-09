@@ -118,7 +118,7 @@ Multi-domain screener platform. One codebase powers separate apps for each domai
 **Domain priority**: electricity first (free API, no regulation), crypto second, stocks third (licensing cost and MiFID II gate for public release).
 
 ### Repository
-Internal codebase name: `stocklens` (foundation built on stocks domain).
+Internal codebase name: `pulse` (foundation built on stocks domain).
 Platform/app brand: **Pulse** (separate domain-specific apps: Pulse Energy, Pulse Crypto, Pulse Stocks).
 
 ### Established Architecture Decisions

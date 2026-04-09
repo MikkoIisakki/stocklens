@@ -1,6 +1,6 @@
 ---
 name: alert-patterns
-description: Alert rule definition, threshold evaluation, deduplication, and delivery patterns for the stocklens system.
+description: Alert rule definition, threshold evaluation, deduplication, and delivery patterns for the pulse system.
 ---
 
 # Alert Patterns

@@ -1,6 +1,6 @@
 ---
 name: code-quality-tools
-description: Static analysis, linting, formatting, type checking, security scanning, and complexity tools used in the stocklens project. All gates enforced in CI. For engineer and devops use.
+description: Static analysis, linting, formatting, type checking, security scanning, and complexity tools used in the pulse project. All gates enforced in CI. For engineer and devops use.
 ---
 
 # Code Quality Tools

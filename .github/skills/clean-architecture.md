@@ -1,6 +1,6 @@
 ---
 name: clean-architecture
-description: Clean Architecture principles applied to the stocklens system. Based on Robert C. Martin's Clean Architecture. Defines dependency rules, layer boundaries, and how domain logic is protected from infrastructure concerns. For architect use.
+description: Clean Architecture principles applied to the pulse system. Based on Robert C. Martin's Clean Architecture. Defines dependency rules, layer boundaries, and how domain logic is protected from infrastructure concerns. For architect use.
 ---
 
 # Clean Architecture

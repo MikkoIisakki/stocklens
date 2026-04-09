@@ -129,7 +129,7 @@ def compute_rsi_signal(prices: pd.Series, length: int = 14) -> Signal:
 
 **Module docstring** (top of every file):
 ```python
-"""Technical signal computation for the stocklens factor engine.
+"""Technical signal computation for the pulse factor engine.
 
 Computes RSI, MACD, Bollinger Band, EMA cross, and OBV signals from
 daily price data. All functions return Signal objects — see common/types.py.

@@ -1,6 +1,6 @@
 ---
 name: api-design
-description: REST API design conventions, versioning strategy, OpenAPI structure, error response format, and pagination contracts for the stocklens system. For architect use.
+description: REST API design conventions, versioning strategy, OpenAPI structure, error response format, and pagination contracts for the pulse system. For architect use.
 ---
 
 # API Design

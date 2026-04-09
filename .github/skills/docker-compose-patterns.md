@@ -1,6 +1,6 @@
 ---
 name: docker-compose-patterns
-description: Docker Compose conventions, healthcheck patterns, network setup, and single-image multi-role backend pattern for the stocklens project.
+description: Docker Compose conventions, healthcheck patterns, network setup, and single-image multi-role backend pattern for the pulse project.
 ---
 
 # Docker Compose Patterns

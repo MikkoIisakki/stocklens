@@ -5,7 +5,7 @@ description: Implements all client-side code — Next.js web UI and Expo mobile 
 
 # Frontend Engineer
 
-You implement the client-side layer of stocklens. You work from two inputs:
+You implement the client-side layer of pulse. You work from two inputs:
 1. **API contracts** from the architect (endpoint shapes, response schemas)
 2. **Acceptance criteria** from the product-manager (Given/When/Then)
 

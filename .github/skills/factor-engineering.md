@@ -1,6 +1,6 @@
 ---
 name: factor-engineering
-description: How to compute each factor/signal used in the stocklens scoring model. Formulas, data requirements, and interpretation for both long-term and short-term signals. For engineer use — consult analyst agent for the investment thesis behind each factor.
+description: How to compute each factor/signal used in the pulse scoring model. Formulas, data requirements, and interpretation for both long-term and short-term signals. For engineer use — consult analyst agent for the investment thesis behind each factor.
 ---
 
 # Factor Engineering
