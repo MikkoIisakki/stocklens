@@ -112,6 +112,9 @@ Workflows live in `.github/workflows/`. Own and maintain all of them.
 | Docker build check | `docker-build.yml` | 1 | push, PR to main |
 | Migration check | `migration-check.yml` | 1 | push, PR to main |
 | CD — deploy to Droplet | `deploy.yml` | 3 | push to main |
+| EAS mobile build | `eas-build.yml` | 4 | push to main (frontend/ changes) |
+
+**EAS secrets** (FCM server key, Apple distribution certificate, Google service account JSON) are stored in EAS project secrets — never in GitHub secrets or the repo. The `eas-build.yml` workflow authenticates to EAS via `EXPO_TOKEN` (GitHub secret, value-only, no key material).
 
 ### `ci.yml`
 

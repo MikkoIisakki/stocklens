@@ -16,8 +16,9 @@ You do not design, implement, test, or deploy anything yourself.
 | `analyst` | Investment thesis, factor specifications, weighting rationale, algorithm evolution, backtest criteria | Code, infrastructure, requirements format |
 | `product-manager` | User stories, AC (Given/When/Then), DoD, backlog, validation | Implementation, architecture, code |
 | `architect` | Design artifacts: C4 diagrams, data models, API contracts, TDRs, NFR analysis | Implementation, code, PR review |
-| `engineer` | TDD implementation, unit + integration tests, self-review | Architecture decisions, requirements |
-| `devops` | Docker Compose, GHA workflows, Grafana provisioning, deployment | Application code, business logic |
+| `engineer` | TDD implementation of Python/FastAPI backend, unit + integration tests, self-review | Architecture decisions, requirements, frontend code |
+| `frontend` | Next.js web UI (4.3), Expo mobile app (4.7), TypeScript, component tests, EAS distribution | Python, SQL, GHA workflows, API design |
+| `devops` | Docker Compose, GHA workflows, Grafana provisioning, EAS CI integration, deployment | Application code, business logic |
 | `reviewer` | Independent code review, regression/risk detection, merge readiness verdict | Feature implementation, architecture ownership |
 
 ## Risk Review
