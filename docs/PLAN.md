@@ -36,7 +36,7 @@ Goal: reliable daily data ingestion, storage with full audit trail, queryable vi
 | 2.1 | DB schema — electricity tables | ✅ Done | `energy_price` (hourly), `energy_region`, extend `ingest_run`; seeds for 6 Nordpool regions |
 | 2.2 | Nordpool/ENTSO-E ingest | ✅ Done | Nordpool public API; `nordpool_client.py`, `energy_ingest.py`; 13 unit tests |
 | 2.3 | Price normalisation (VAT, currency) | ✅ Done | `normalization/energy_price.py`; spot_c_kwh + total_c_kwh with VAT+tax |
-| 2.4 | Daily price scheduler | ⬜ Todo | Cron at 13:30 CET (after Nordpool publishes) |
+| 2.4 | Daily price scheduler | ✅ Done | `run_energy_job` at 11:30 UTC (13:30 CET) added to APScheduler |
 | 2.5 | Threshold alert rules | ⬜ Todo | Alert when tomorrow peak > X c/kWh |
 | 2.6 | REST API — electricity prices + alerts | ⬜ Todo | `GET /v1/energy/prices`, `GET /v1/energy/alerts` |
 | 2.7 | "Cheap hours" ranking | ⬜ Todo | Daily ranked list of cheapest hours for today + tomorrow |
