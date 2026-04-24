@@ -189,3 +189,133 @@ async def test_alerts_unknown_region_returns_404() -> None:
         resp = await client.get("/v1/energy/alerts?region=XX")
 
     assert resp.status_code == 404
+
+
+# ─── GET /v1/energy/cheap-hours ───────────────────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_cheap_hours_sorted_ascending_with_rank() -> None:
+    # Repository is expected to return rows already sorted ascending by total_c_kwh.
+    sorted_rows = [
+        {
+            "hour": 3,
+            "price_eur_mwh": Decimal("12.00"),
+            "spot_c_kwh": Decimal("1.20"),
+            "total_c_kwh": Decimal("2.50"),
+        },
+        {
+            "hour": 4,
+            "price_eur_mwh": Decimal("20.00"),
+            "spot_c_kwh": Decimal("2.00"),
+            "total_c_kwh": Decimal("3.75"),
+        },
+        {
+            "hour": 14,
+            "price_eur_mwh": Decimal("35.00"),
+            "spot_c_kwh": Decimal("3.50"),
+            "total_c_kwh": Decimal("5.84"),
+        },
+    ]
+    app = _make_app(_pool_mock(_region_row(), sorted_rows))
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        resp = await client.get("/v1/energy/cheap-hours?region=FI&date=2025-01-15")
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["region"] == "FI"
+    assert body["date"] == "2025-01-15"
+    hours = body["hours"]
+    assert len(hours) == 3
+    # Sorted ascending by total_c_kwh
+    totals = [h["total_c_kwh"] for h in hours]
+    assert totals == sorted(totals)
+    # Rank starts at 1 and is monotonically increasing
+    assert [h["rank"] for h in hours] == [1, 2, 3]
+    assert hours[0]["hour"] == 3
+    assert hours[0]["total_c_kwh"] == 2.5
+
+
+@pytest.mark.asyncio
+async def test_cheap_hours_respects_limit_parameter() -> None:
+    sorted_rows = [
+        {
+            "hour": h,
+            "price_eur_mwh": Decimal("10.00"),
+            "spot_c_kwh": Decimal("1.00"),
+            "total_c_kwh": Decimal(f"{2 + h}.00"),
+        }
+        for h in range(5)
+    ]
+    pool = _pool_mock(_region_row(), sorted_rows)
+    app = _make_app(pool)
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        resp = await client.get("/v1/energy/cheap-hours?region=FI&date=2025-01-15&limit=5")
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert len(body["hours"]) == 5
+    # Ensure limit was forwarded to repository (3rd positional arg after conn, region, date)
+    conn_mock = pool.acquire.return_value._value
+    args, _ = conn_mock.fetch.call_args
+    assert 5 in args
+
+
+@pytest.mark.asyncio
+async def test_cheap_hours_today_shortcut_accepted() -> None:
+    app = _make_app(_pool_mock(_region_row(), []))
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        resp = await client.get("/v1/energy/cheap-hours?region=FI&date=today")
+
+    assert resp.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_cheap_hours_tomorrow_shortcut_accepted() -> None:
+    app = _make_app(_pool_mock(_region_row(), []))
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        resp = await client.get("/v1/energy/cheap-hours?region=FI&date=tomorrow")
+
+    assert resp.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_cheap_hours_unknown_region_returns_404() -> None:
+    conn = MagicMock()
+    conn.fetchrow = AsyncMock(return_value=None)
+    pool = MagicMock()
+    pool.acquire = MagicMock(return_value=_AsyncCtx(conn))
+    app = _make_app(pool)
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        resp = await client.get("/v1/energy/cheap-hours?region=XX&date=2025-01-15")
+
+    assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_cheap_hours_invalid_date_returns_422() -> None:
+    app = _make_app(_pool_mock(_region_row(), []))
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        resp = await client.get("/v1/energy/cheap-hours?region=FI&date=not-a-date")
+
+    assert resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_cheap_hours_empty_when_no_data() -> None:
+    app = _make_app(_pool_mock(_region_row(), []))
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        resp = await client.get("/v1/energy/cheap-hours?region=FI&date=2099-01-01")
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["region"] == "FI"
+    assert body["date"] == "2099-01-01"
+    assert body["hours"] == []

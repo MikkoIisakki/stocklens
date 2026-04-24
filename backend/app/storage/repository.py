@@ -186,6 +186,29 @@ async def get_energy_prices(
     return [dict(row) for row in rows]
 
 
+async def get_cheap_hours(
+    conn: AnyConn, region_code: str, price_date: date, limit: int
+) -> list[dict[str, Any]]:
+    """Return hourly price rows for a region/date sorted ascending by total_c_kwh.
+
+    Caller passes ``limit`` to cap the result; the SQL applies it server-side.
+    Ranking (1 = cheapest) is derived in the API layer from ordering.
+    """
+    rows = await conn.fetch(
+        """
+        SELECT hour, price_eur_mwh, spot_c_kwh, total_c_kwh
+          FROM energy_price
+         WHERE region_code = $1 AND price_date = $2
+         ORDER BY total_c_kwh ASC, hour ASC
+         LIMIT $3
+        """,
+        region_code,
+        price_date,
+        limit,
+    )
+    return [dict(row) for row in rows]
+
+
 async def get_energy_alerts(conn: AnyConn, region_code: str) -> list[dict[str, Any]]:
     """Return all fired alerts for a region, newest first."""
     rows = await conn.fetch(
