@@ -40,7 +40,7 @@ Goal: reliable daily data ingestion, storage with full audit trail, queryable vi
 | 2.5 | Threshold alert rules | ✅ Done | `alerts/energy.py`; `energy_alert_rule` + `energy_alert` tables; evaluated in job after ingest |
 | 2.6 | REST API — electricity prices + alerts | ✅ Done | `GET /v1/energy/prices`, `GET /v1/energy/alerts` |
 | 2.7 | "Cheap hours" ranking | ✅ Done | `GET /v1/energy/cheap-hours` returns hours ranked ascending by total_c_kwh |
-| 2.8 | Grafana energy dashboard | ⬜ Todo | 24h price chart, peak/off-peak highlight, 30-day trend |
+| 2.8 | Grafana energy dashboard | ✅ Done | `grafana/dashboards/energy.json`: 24h prices, peak/off-peak stat, 30-day trend, cheapest-hour table; Postgres datasource provisioning + docker-compose service |
 | 2.9 | Health check extension | ⬜ Todo | Energy ingest staleness (>25h) reflected in `/v1/health/ready` |
 
 ### Phase 2 Definition of Done
