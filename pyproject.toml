@@ -10,6 +10,7 @@ dependencies = [
     "pydantic-settings==2.7.0",
     "apscheduler==3.10.4",
     "yfinance==0.2.50",
+    "lxml>=6.1.0",
     "pandas>=2.3.2",
     "pandas-ta>=0.3.14b0",
     "fredapi==0.5.2",
