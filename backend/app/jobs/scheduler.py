@@ -1,7 +1,7 @@
 """APScheduler entry point — dispatches daily ingest jobs.
 
 Schedule (all times UTC, cron triggers):
-  - Energy ingest: 11:30 UTC = 13:30 CET — after Nordpool publishes day-ahead prices (~13:00 CET)
+  - Energy ingest: 11:30 UTC = 13:30 CET — after ENTSO-E publishes day-ahead prices (~13:00 CET)
   - FI ingest:     17:00 UTC = 19:00 EET — after Helsinki close (17:30 local)
   - US ingest:     21:30 UTC = 23:30 EET — after NYSE close (16:00 ET = 21:00 UTC)
 
@@ -106,7 +106,7 @@ def build_scheduler() -> BlockingScheduler:
         run_energy_job,
         trigger=CronTrigger(hour=11, minute=30, timezone="UTC"),
         id="energy_price_ingest",
-        name="Nordpool day-ahead price ingest",
+        name="ENTSO-E day-ahead price ingest",
         misfire_grace_time=3600,
     )
 
