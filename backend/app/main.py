@@ -4,8 +4,9 @@ from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 import asyncpg
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 
+from app.api.auth import require_api_key
 from app.api.routers import assets, energy, health
 from app.common.config import settings
 from app.common.logging import configure_logging
@@ -33,9 +34,15 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
+    # Health is intentionally unauthenticated — load balancers and Grafana
+    # need to probe it without provisioning credentials.
     app.include_router(health.router)
-    app.include_router(assets.router)
-    app.include_router(energy.router)
+
+    # Domain routers require an API key. The dependency runs once per request
+    # before the route handler; route authors don't need to import it.
+    auth_dep = [Depends(require_api_key)]
+    app.include_router(assets.router, dependencies=auth_dep)
+    app.include_router(energy.router, dependencies=auth_dep)
 
     return app
 

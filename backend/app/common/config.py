@@ -27,5 +27,11 @@ class Settings(BaseSettings):
     # error rather than crashing the whole app at import time.
     entsoe_api_token: SecretStr = SecretStr("")
 
+    # Master API key — bypasses the api_key DB lookup when set. Intended for
+    # local dev and bootstrap; production keys should live in the api_key table
+    # (issue with `python -m app.tools.create_api_key`). Empty string disables
+    # the master path entirely. See ADR-007.
+    master_api_key: SecretStr = SecretStr("")
+
 
 settings = Settings()

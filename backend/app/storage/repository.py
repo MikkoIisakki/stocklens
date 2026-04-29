@@ -272,6 +272,39 @@ async def upsert_energy_prices(conn: AnyConn, prices: list[dict[str, Any]]) -> i
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# API keys
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+async def lookup_api_key(conn: AnyConn, key_hash: str) -> dict[str, Any] | None:
+    """Return ``{"id", "name"}`` for an active key with this hash, or None."""
+    row = await conn.fetchrow(
+        """
+        SELECT id, name
+          FROM api_key
+         WHERE key_hash = $1 AND revoked_at IS NULL
+        """,
+        key_hash,
+    )
+    return dict(row) if row else None
+
+
+async def touch_api_key_last_used(conn: AnyConn, key_id: int) -> None:
+    """Stamp ``last_used_at = now()`` for *key_id*."""
+    await conn.execute("UPDATE api_key SET last_used_at = now() WHERE id = $1", key_id)
+
+
+async def insert_api_key(conn: AnyConn, *, name: str, key_hash: str) -> int:
+    """Insert a new API key row and return its id."""
+    row_id: int = await conn.fetchval(
+        "INSERT INTO api_key (name, key_hash) VALUES ($1, $2) RETURNING id",
+        name,
+        key_hash,
+    )
+    return row_id
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Raw source snapshots
 # ─────────────────────────────────────────────────────────────────────────────
 
