@@ -1,13 +1,14 @@
 """Health check endpoints.
 
-GET /v1/health/ready — returns 200 OK when healthy, 200 with status=degraded
-when the last ingest run finished more than max_ingest_age_hours ago,
-or 503 when the database is unreachable.
+GET /v1/health/ready — returns 200 OK when every expected ingest market has
+run within ``max_ingest_age_hours``, 200 with status=degraded when one or
+more markets are stale or have never run, or 503 when the database is
+unreachable.
 """
 
 import logging
 from datetime import UTC, datetime, timedelta
-from typing import TYPE_CHECKING, Annotated, Any
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Response
 
@@ -15,13 +16,12 @@ from app.api.dependencies import get_pool
 from app.common.config import Settings
 from app.common.config import settings as default_settings
 
-if TYPE_CHECKING:
-    pass
-
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/v1/health", tags=["health"])
 
-_STALE_REASON = "ingest stale or never run"
+# Markets whose freshness counts toward overall readiness. Each corresponds to
+# a scheduled APScheduler job (see app/jobs/scheduler.py).
+EXPECTED_INGEST_MARKETS: tuple[str, ...] = ("ENERGY", "FI", "US")
 
 
 def get_settings() -> Settings:
@@ -34,21 +34,24 @@ async def readiness(
     response: Response,
     cfg: Annotated[Settings, Depends(get_settings)],
     pool: Annotated[Any, Depends(get_pool)],
-) -> dict[str, str]:
-    """Return system readiness status.
+) -> dict[str, Any]:
+    """Return per-market readiness status.
 
     Status values:
-    - ``ok``: database reachable, last successful ingest within threshold
-    - ``degraded``: database reachable but ingest is stale or has never run
-    - ``unavailable``: database unreachable (HTTP 503)
+    - ``ok``: database reachable and every expected market has a successful
+      ingest within ``max_ingest_age_hours``.
+    - ``degraded``: database reachable but at least one expected market is
+      stale or has never run. The ``markets`` object lists each one.
+    - ``unavailable``: database unreachable (HTTP 503).
     """
     try:
         async with pool.acquire() as conn:
-            row = await conn.fetchrow(
+            rows = await conn.fetch(
                 """
-                SELECT MAX(finished_at) AS last_finished
+                SELECT market, MAX(finished_at) AS last_finished
                   FROM ingest_run
                  WHERE status = 'success'
+                 GROUP BY market
                 """
             )
     except Exception:
@@ -56,12 +59,36 @@ async def readiness(
         response.status_code = 503
         return {"status": "unavailable"}
 
-    last_finished: datetime | None = row["last_finished"] if row else None
+    last_by_market: dict[str, datetime | None] = {m: None for m in EXPECTED_INGEST_MARKETS}
+    for r in rows:
+        if r["market"] in last_by_market:
+            last_by_market[r["market"]] = r["last_finished"]
+
     threshold = timedelta(hours=cfg.max_ingest_age_hours)
     now = datetime.now(UTC)
 
-    # asyncpg returns TIMESTAMPTZ as tz-aware datetimes — no .replace() needed
-    if last_finished is None or (now - last_finished) > threshold:
-        return {"status": "degraded", "reason": _STALE_REASON}
+    markets: dict[str, dict[str, Any]] = {}
+    stale_markets: list[str] = []
+    for market, last_finished in last_by_market.items():
+        if last_finished is None:
+            markets[market] = {"last_finished": None, "age_seconds": None, "stale": True}
+            stale_markets.append(market)
+            continue
+        age = now - last_finished
+        is_stale = age > threshold
+        markets[market] = {
+            "last_finished": last_finished.isoformat(),
+            "age_seconds": int(age.total_seconds()),
+            "stale": is_stale,
+        }
+        if is_stale:
+            stale_markets.append(market)
 
-    return {"status": "ok"}
+    if stale_markets:
+        return {
+            "status": "degraded",
+            "reason": f"stale or missing ingest: {', '.join(sorted(stale_markets))}",
+            "markets": markets,
+        }
+
+    return {"status": "ok", "markets": markets}

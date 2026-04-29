@@ -1,4 +1,4 @@
-"""Unit tests for GET /v1/health/ready.
+"""Unit tests for GET /v1/health/ready (per-market freshness, task 2.9).
 
 All database interactions are mocked — no live DB or network needed.
 """
@@ -12,7 +12,7 @@ from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 
 from app.api.dependencies import get_pool
-from app.api.routers.health import get_settings, router
+from app.api.routers.health import EXPECTED_INGEST_MARKETS, get_settings, router
 from app.common.config import Settings
 
 
@@ -33,11 +33,15 @@ def _make_app(pool_mock: Any, max_ingest_age_hours: int = 25) -> FastAPI:
     return app
 
 
-def _pool_returning(last_finished: datetime | None) -> MagicMock:
-    """Build a pool mock whose fetchrow returns a row with last_finished."""
-    row = {"last_finished": last_finished}
+def _pool_returning(per_market: dict[str, datetime | None]) -> MagicMock:
+    """Build a pool mock whose fetch returns one row per provided market."""
+    rows = [
+        {"market": market, "last_finished": last_finished}
+        for market, last_finished in per_market.items()
+        if last_finished is not None
+    ]
     conn = MagicMock()
-    conn.fetchrow = AsyncMock(return_value=row)
+    conn.fetch = AsyncMock(return_value=rows)
 
     class _Ctx:
         async def __aenter__(self) -> MagicMock:
@@ -52,8 +56,6 @@ def _pool_returning(last_finished: datetime | None) -> MagicMock:
 
 
 def _pool_raising(exc: Exception) -> MagicMock:
-    """Build a pool mock whose acquire().__aenter__ raises exc."""
-
     class _Ctx:
         async def __aenter__(self) -> None:
             raise exc
@@ -66,22 +68,31 @@ def _pool_raising(exc: Exception) -> MagicMock:
     return pool
 
 
+def _all_fresh() -> dict[str, datetime | None]:
+    fresh = datetime.now(UTC) - timedelta(hours=1)
+    return {market: fresh for market in EXPECTED_INGEST_MARKETS}
+
+
 @pytest.mark.asyncio
-async def test_ok_when_recent_ingest() -> None:
-    last_finished = datetime.now(UTC) - timedelta(hours=1)
-    app = _make_app(_pool_returning(last_finished))
+async def test_ok_when_every_market_fresh() -> None:
+    app = _make_app(_pool_returning(_all_fresh()))
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         resp = await client.get("/v1/health/ready")
 
     assert resp.status_code == 200
-    assert resp.json()["status"] == "ok"
+    body = resp.json()
+    assert body["status"] == "ok"
+    assert set(body["markets"].keys()) == set(EXPECTED_INGEST_MARKETS)
+    assert all(m["stale"] is False for m in body["markets"].values())
 
 
 @pytest.mark.asyncio
-async def test_degraded_when_ingest_stale() -> None:
-    last_finished = datetime.now(UTC) - timedelta(hours=30)
-    app = _make_app(_pool_returning(last_finished))
+async def test_degraded_when_energy_stale() -> None:
+    """Task 2.9: ENERGY ingest staleness must surface in /v1/health/ready."""
+    state = _all_fresh()
+    state["ENERGY"] = datetime.now(UTC) - timedelta(hours=30)
+    app = _make_app(_pool_returning(state))
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         resp = await client.get("/v1/health/ready")
@@ -89,30 +100,61 @@ async def test_degraded_when_ingest_stale() -> None:
     assert resp.status_code == 200
     body = resp.json()
     assert body["status"] == "degraded"
-    assert "reason" in body
+    assert "ENERGY" in body["reason"]
+    assert body["markets"]["ENERGY"]["stale"] is True
+    assert body["markets"]["FI"]["stale"] is False
+    assert body["markets"]["US"]["stale"] is False
 
 
 @pytest.mark.asyncio
-async def test_degraded_when_no_ingest_runs() -> None:
-    app = _make_app(_pool_returning(None))
+async def test_degraded_when_energy_never_ran() -> None:
+    """An expected market with no successful run is treated as stale."""
+    state = _all_fresh()
+    state["ENERGY"] = None
+    app = _make_app(_pool_returning(state))
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         resp = await client.get("/v1/health/ready")
 
     assert resp.status_code == 200
-    assert resp.json()["status"] == "degraded"
+    body = resp.json()
+    assert body["status"] == "degraded"
+    assert body["markets"]["ENERGY"]["last_finished"] is None
+    assert body["markets"]["ENERGY"]["age_seconds"] is None
+    assert body["markets"]["ENERGY"]["stale"] is True
 
 
 @pytest.mark.asyncio
-async def test_degraded_exactly_at_threshold() -> None:
-    """A run finished exactly max_ingest_age_hours ago should be degraded."""
-    last_finished = datetime.now(UTC) - timedelta(hours=25, seconds=1)
-    app = _make_app(_pool_returning(last_finished), max_ingest_age_hours=25)
+async def test_degraded_when_multiple_markets_stale() -> None:
+    state: dict[str, datetime | None] = {
+        "ENERGY": datetime.now(UTC) - timedelta(hours=40),
+        "FI": datetime.now(UTC) - timedelta(hours=1),
+        "US": None,
+    }
+    app = _make_app(_pool_returning(state))
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         resp = await client.get("/v1/health/ready")
 
-    assert resp.json()["status"] == "degraded"
+    body = resp.json()
+    assert body["status"] == "degraded"
+    # Reason is alphabetised so it's stable
+    assert body["reason"] == "stale or missing ingest: ENERGY, US"
+
+
+@pytest.mark.asyncio
+async def test_degraded_exactly_past_threshold() -> None:
+    """A run finished max_ingest_age_hours+1s ago is degraded."""
+    state = _all_fresh()
+    state["FI"] = datetime.now(UTC) - timedelta(hours=25, seconds=1)
+    app = _make_app(_pool_returning(state), max_ingest_age_hours=25)
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        resp = await client.get("/v1/health/ready")
+
+    body = resp.json()
+    assert body["status"] == "degraded"
+    assert body["markets"]["FI"]["stale"] is True
 
 
 @pytest.mark.asyncio
