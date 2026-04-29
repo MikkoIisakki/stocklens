@@ -3,7 +3,7 @@
 All external dependencies (HTTP, DB) are mocked.
 """
 
-from datetime import date
+from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -15,14 +15,16 @@ from app.ingestion.energy_ingest import run_energy_ingest
 
 
 def _fake_entsoe_response(delivery_date: date) -> dict[str, Any]:
-    """ENTSO-E client returns the same shape the old Nordpool client did."""
+    """ENTSO-E client now returns interval-shaped rows (ADR-005)."""
+    base = datetime.combine(delivery_date, datetime.min.time(), tzinfo=UTC)
     return {
-        "deliveryDateCET": delivery_date.isoformat(),
+        "deliveryDate": delivery_date.isoformat(),
         "currency": "EUR",
         "rows": [
             {
-                "startTime": f"{delivery_date.isoformat()}T{h:02d}:00:00.000Z",
-                "endTime": f"{delivery_date.isoformat()}T{h+1:02d}:00:00.000Z",
+                "interval_start": base + timedelta(hours=h),
+                "interval_end": base + timedelta(hours=h + 1),
+                "interval_minutes": 60,
                 "value": 80.0 + h,
             }
             for h in range(24)
@@ -160,7 +162,7 @@ async def test_no_active_regions_marks_run_failed() -> None:
 async def test_entsoe_returns_no_rows_marks_run_failed() -> None:
     """If ENTSO-E returns an empty response, ingest_run is marked failed."""
     empty_response: dict[str, Any] = {
-        "deliveryDateCET": "2025-01-15",
+        "deliveryDate": "2025-01-15",
         "currency": "EUR",
         "rows": [],
     }

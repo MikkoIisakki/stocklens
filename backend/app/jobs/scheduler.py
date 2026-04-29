@@ -51,23 +51,17 @@ async def _run_energy_pipeline() -> None:
         await run_energy_ingest(pool)
 
         # Alert evaluation: jobs layer may import alerts layer (clean arch OK)
+        from datetime import date, timedelta
+
+        target_date = date.today() + timedelta(days=1)
         async with pool.acquire() as conn:
             regions = await repo.get_active_energy_regions(conn)
             for region in regions:
-                from datetime import date, timedelta
-
-                target_date = date.today() + timedelta(days=1)
-                prices = await conn.fetch(
-                    "SELECT hour, total_c_kwh FROM energy_price WHERE region_code=$1 AND price_date=$2",
-                    region["code"],
-                    target_date,
-                )
+                prices = await repo.get_energy_prices(conn, region["code"], target_date)
                 if not prices:
                     continue
                 rules = await repo.get_active_alert_rules(conn, region["code"])
-                alerts = check_threshold_alerts(
-                    [dict(r) for r in prices], rules=rules, price_date=target_date
-                )
+                alerts = check_threshold_alerts(prices, rules=rules, price_date=target_date)
                 if alerts:
                     await repo.save_energy_alerts(conn, alerts)
                     logger.info(

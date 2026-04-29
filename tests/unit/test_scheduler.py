@@ -93,12 +93,28 @@ def test_run_energy_job_calls_energy_ingest() -> None:
     mock_pool = _make_pool()
     mock_ingest = AsyncMock()
 
+    # Wire pool.acquire() as an async context manager returning a stub conn.
+    conn = MagicMock()
+
+    class _Acq:
+        async def __aenter__(self) -> MagicMock:
+            return conn
+
+        async def __aexit__(self, *_: object) -> None:
+            pass
+
+    mock_pool.acquire = MagicMock(return_value=_Acq())
+
     async def fake_create_pool(*_: object, **__: object) -> MagicMock:
         return mock_pool
 
     with (
         patch("app.jobs.scheduler.asyncpg.create_pool", side_effect=fake_create_pool),
         patch("app.jobs.scheduler.run_energy_ingest", new=mock_ingest),
+        patch(
+            "app.jobs.scheduler.repo.get_active_energy_regions",
+            new=AsyncMock(return_value=[]),
+        ),
     ):
         run_energy_job()
 

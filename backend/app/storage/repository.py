@@ -150,7 +150,7 @@ async def save_energy_alerts(conn: AnyConn, alerts: list[dict[str, Any]]) -> int
     await conn.executemany(
         """
         INSERT INTO energy_alert
-               (rule_id, region_code, price_date, peak_c_kwh, peak_hour, threshold_c_kwh)
+               (rule_id, region_code, price_date, peak_c_kwh, peak_interval_start, threshold_c_kwh)
         VALUES ($1, $2, $3, $4, $5, $6)
         ON CONFLICT (rule_id, price_date) DO NOTHING
         """,
@@ -160,7 +160,7 @@ async def save_energy_alerts(conn: AnyConn, alerts: list[dict[str, Any]]) -> int
                 a["region_code"],
                 a["price_date"],
                 a["peak_c_kwh"],
-                a["peak_hour"],
+                a["peak_interval_start"],
                 a["threshold_c_kwh"],
             )
             for a in alerts
@@ -172,13 +172,20 @@ async def save_energy_alerts(conn: AnyConn, alerts: list[dict[str, Any]]) -> int
 async def get_energy_prices(
     conn: AnyConn, region_code: str, price_date: date
 ) -> list[dict[str, Any]]:
-    """Return 24 hourly price rows for a region and date, ordered by hour."""
+    """Return interval price rows for a region whose UTC date matches *price_date*.
+
+    Returned rows are ordered by ``interval_start`` ascending. Resolution is
+    whatever the upstream provider published — typically PT60M (24 rows) or
+    PT15M (96 rows) for ENTSO-E zones.
+    """
     rows = await conn.fetch(
         """
-        SELECT hour, price_eur_mwh, spot_c_kwh, total_c_kwh
+        SELECT interval_start, interval_end, interval_minutes,
+               price_eur_mwh, spot_c_kwh, total_c_kwh
           FROM energy_price
-         WHERE region_code = $1 AND price_date = $2
-         ORDER BY hour
+         WHERE region_code = $1
+           AND (interval_start AT TIME ZONE 'UTC')::date = $2
+         ORDER BY interval_start
         """,
         region_code,
         price_date,
@@ -186,20 +193,22 @@ async def get_energy_prices(
     return [dict(row) for row in rows]
 
 
-async def get_cheap_hours(
+async def get_cheap_intervals(
     conn: AnyConn, region_code: str, price_date: date, limit: int
 ) -> list[dict[str, Any]]:
-    """Return hourly price rows for a region/date sorted ascending by total_c_kwh.
+    """Return interval price rows for a region/date sorted ascending by total_c_kwh.
 
     Caller passes ``limit`` to cap the result; the SQL applies it server-side.
     Ranking (1 = cheapest) is derived in the API layer from ordering.
     """
     rows = await conn.fetch(
         """
-        SELECT hour, price_eur_mwh, spot_c_kwh, total_c_kwh
+        SELECT interval_start, interval_end, interval_minutes,
+               price_eur_mwh, spot_c_kwh, total_c_kwh
           FROM energy_price
-         WHERE region_code = $1 AND price_date = $2
-         ORDER BY total_c_kwh ASC, hour ASC
+         WHERE region_code = $1
+           AND (interval_start AT TIME ZONE 'UTC')::date = $2
+         ORDER BY total_c_kwh ASC, interval_start ASC
          LIMIT $3
         """,
         region_code,
@@ -213,7 +222,7 @@ async def get_energy_alerts(conn: AnyConn, region_code: str) -> list[dict[str, A
     """Return all fired alerts for a region, newest first."""
     rows = await conn.fetch(
         """
-        SELECT ea.id, ea.price_date, ea.peak_c_kwh, ea.peak_hour,
+        SELECT ea.id, ea.price_date, ea.peak_c_kwh, ea.peak_interval_start,
                ea.threshold_c_kwh, ea.fired_at
           FROM energy_alert ea
           JOIN energy_alert_rule ear ON ear.id = ea.rule_id
@@ -226,28 +235,32 @@ async def get_energy_alerts(conn: AnyConn, region_code: str) -> list[dict[str, A
 
 
 async def upsert_energy_prices(conn: AnyConn, prices: list[dict[str, Any]]) -> int:
-    """Upsert a batch of hourly energy price rows. Returns the number of rows processed."""
+    """Upsert a batch of interval-keyed energy price rows. Returns rows processed."""
     if not prices:
         return 0
 
     await conn.executemany(
         """
         INSERT INTO energy_price
-               (region_code, ingest_run_id, price_date, hour, price_eur_mwh, spot_c_kwh, total_c_kwh)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
-        ON CONFLICT (region_code, price_date, hour) DO UPDATE
-               SET price_eur_mwh = EXCLUDED.price_eur_mwh,
-                   spot_c_kwh    = EXCLUDED.spot_c_kwh,
-                   total_c_kwh   = EXCLUDED.total_c_kwh,
-                   ingest_run_id = EXCLUDED.ingest_run_id,
-                   fetched_at    = now()
+               (region_code, ingest_run_id, interval_start, interval_end, interval_minutes,
+                price_eur_mwh, spot_c_kwh, total_c_kwh)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        ON CONFLICT (region_code, interval_start) DO UPDATE
+               SET interval_end     = EXCLUDED.interval_end,
+                   interval_minutes = EXCLUDED.interval_minutes,
+                   price_eur_mwh    = EXCLUDED.price_eur_mwh,
+                   spot_c_kwh       = EXCLUDED.spot_c_kwh,
+                   total_c_kwh      = EXCLUDED.total_c_kwh,
+                   ingest_run_id    = EXCLUDED.ingest_run_id,
+                   fetched_at       = now()
         """,
         [
             (
                 p["region_code"],
                 p["ingest_run_id"],
-                p["price_date"],
-                p["hour"],
+                p["interval_start"],
+                p["interval_end"],
+                p["interval_minutes"],
                 p["price_eur_mwh"],
                 p["spot_c_kwh"],
                 p["total_c_kwh"],

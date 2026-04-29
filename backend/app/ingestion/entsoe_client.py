@@ -1,17 +1,18 @@
 """Async HTTP client for the ENTSO-E Transparency Platform day-ahead price API.
 
-ENTSO-E publishes hourly day-ahead spot prices for every EU bidding zone.
-The Transparency Platform's RESTful interface returns XML
-``Publication_MarketDocument`` payloads (``documentType=A44`` for prices).
+ENTSO-E publishes spot prices for every EU bidding zone via a RESTful API that
+returns XML ``Publication_MarketDocument`` payloads (``documentType=A44`` for
+day-ahead prices).
 
-Authentication is by query parameter ``securityToken`` — the token must be
-obtained by registering at https://transparency.entsoe.eu (Settings → Web
-API Security Token).
+Authentication is by query parameter ``securityToken`` — the token is obtained
+by registering at https://transparency.entsoe.eu (Settings → Web API Security
+Token).
 
-This module is a thin anti-corruption layer: it speaks ENTSO-E XML on the
-wire and returns rows shaped exactly like the previous Nordpool client so
-that ``app.normalization.energy_price.normalize_nordpool_response`` continues
-to work without modification.
+Resolution:
+    Each ``<Period>`` carries a ``<resolution>PTnnM</resolution>`` element. We
+    parse that into ``interval_minutes`` (15 for ``PT15M``, 60 for ``PT60M``,
+    etc.) and emit one row per ``<Point>`` so callers preserve the resolution
+    ENTSO-E publishes. See ADR-005 for the platform convention.
 
 Endpoint: GET https://web-api.tp.entsoe.eu/api
 """
@@ -20,6 +21,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import re
 from datetime import UTC, date, datetime, timedelta
 from typing import Any
 from xml.etree import ElementTree as ET
@@ -33,9 +35,11 @@ _TIMEOUT = 30.0  # seconds
 _DOCUMENT_TYPE = "A44"  # Day-ahead prices
 
 # ENTSO-E XML uses default namespaces that change per document version.
-# We match by local-name to stay compatible across schema revisions.
+# Match by local-name to stay compatible across schema revisions.
 _PUBLICATION_LOCAL = "Publication_MarketDocument"
 _ACK_LOCAL = "Acknowledgement_MarketDocument"
+
+_RESOLUTION_RE = re.compile(r"^PT(\d+)M$")  # e.g. PT15M, PT60M
 
 
 # Bidding zone code → ENTSO-E EIC (Energy Identification Code).
@@ -88,14 +92,37 @@ def _fetch_sync(target_date: date, region: str, token: str) -> str:
         return response.text
 
 
+def _parse_resolution_minutes(text: str | None) -> int:
+    """Parse an ENTSO-E ``<resolution>`` value (e.g. ``PT15M``) into minutes.
+
+    Falls back to 60 when missing/unparseable; logs a warning.
+    """
+    if not text:
+        logger.warning("ENTSO-E Period missing resolution element; defaulting to 60 min")
+        return 60
+    m = _RESOLUTION_RE.match(text.strip())
+    if not m:
+        logger.warning("Unrecognised ENTSO-E resolution %r; defaulting to 60 min", text)
+        return 60
+    return int(m.group(1))
+
+
 def _parse_xml(xml_text: str, target_date: date) -> dict[str, Any]:
-    """Parse an ENTSO-E A44 Publication_MarketDocument into the legacy row shape.
+    """Parse an ENTSO-E A44 Publication_MarketDocument into interval rows.
 
     Produces:
         {
-            "deliveryDateCET": "YYYY-MM-DD",
+            "deliveryDate": "YYYY-MM-DD",
             "currency": "EUR",
-            "rows": [{"startTime": "...", "endTime": "...", "value": <float>}, ...]
+            "rows": [
+                {
+                    "interval_start": datetime UTC,
+                    "interval_end":   datetime UTC,
+                    "interval_minutes": 15 | 60 | ...,
+                    "value": <float EUR/MWh>,
+                },
+                ...
+            ]
         }
 
     Raises:
@@ -126,6 +153,8 @@ def _parse_xml(xml_text: str, target_date: date) -> dict[str, Any]:
             if _local(period.tag) != "Period":
                 continue
             period_start = _read_period_start(period, fallback=target_date)
+            interval_minutes = _parse_resolution_minutes(_read_text_child(period, "resolution"))
+            step = timedelta(minutes=interval_minutes)
             for point in period.iter():
                 if _local(point.tag) != "Point":
                     continue
@@ -133,18 +162,19 @@ def _parse_xml(xml_text: str, target_date: date) -> dict[str, Any]:
                 price = _read_float_child(point, "price.amount")
                 if position is None or price is None:
                     continue
-                hour_start = period_start + timedelta(hours=position - 1)
-                hour_end = hour_start + timedelta(hours=1)
+                slot_start = period_start + step * (position - 1)
+                slot_end = slot_start + step
                 rows.append(
                     {
-                        "startTime": _format_iso(hour_start),
-                        "endTime": _format_iso(hour_end),
+                        "interval_start": slot_start,
+                        "interval_end": slot_end,
+                        "interval_minutes": interval_minutes,
                         "value": price,
                     }
                 )
 
     return {
-        "deliveryDateCET": target_date.isoformat(),
+        "deliveryDate": target_date.isoformat(),
         "currency": "EUR",
         "rows": rows,
     }
@@ -162,37 +192,37 @@ def _read_period_start(period: ET.Element, fallback: date) -> datetime:
                 parsed = datetime.fromisoformat(text)
                 if parsed.tzinfo is None:
                     parsed = parsed.replace(tzinfo=UTC)
-                return parsed
+                return parsed.astimezone(UTC)
             except ValueError:
                 break
     return datetime.combine(fallback, datetime.min.time(), tzinfo=UTC)
 
 
-def _read_int_child(parent: ET.Element, local_name: str) -> int | None:
+def _read_text_child(parent: ET.Element, local_name: str) -> str | None:
     for child in parent:
         if _local(child.tag) == local_name and child.text:
-            try:
-                return int(child.text)
-            except ValueError:
-                return None
+            return child.text
     return None
+
+
+def _read_int_child(parent: ET.Element, local_name: str) -> int | None:
+    text = _read_text_child(parent, local_name)
+    if text is None:
+        return None
+    try:
+        return int(text)
+    except ValueError:
+        return None
 
 
 def _read_float_child(parent: ET.Element, local_name: str) -> float | None:
-    for child in parent:
-        if _local(child.tag) == local_name and child.text:
-            try:
-                return float(child.text)
-            except ValueError:
-                return None
-    return None
-
-
-def _format_iso(dt: datetime) -> str:
-    """Format a UTC datetime as ``YYYY-MM-DDTHH:MM:SS.000Z`` (matches old Nordpool shape)."""
-    if dt.tzinfo is not None:
-        dt = dt.astimezone(UTC).replace(tzinfo=None)
-    return dt.strftime("%Y-%m-%dT%H:%M:%S.000Z")
+    text = _read_text_child(parent, local_name)
+    if text is None:
+        return None
+    try:
+        return float(text)
+    except ValueError:
+        return None
 
 
 async def fetch_day_ahead(target_date: date, region: str = "FI", *, token: str) -> dict[str, Any]:
@@ -205,8 +235,10 @@ async def fetch_day_ahead(target_date: date, region: str = "FI", *, token: str) 
         token: ENTSO-E Web API Security Token.
 
     Returns:
-        Dict with the same shape the previous Nordpool client returned, so
-        ``normalize_nordpool_response`` can consume it unchanged.
+        Dict with ``rows`` shaped per the interval-based platform convention
+        (ADR-005): each row has ``interval_start`` / ``interval_end``
+        (UTC datetimes), ``interval_minutes`` (15 or 60), and ``value`` in
+        EUR/MWh.
 
     Raises:
         KeyError: if *region* is not in ``REGION_TO_EIC``.
@@ -218,5 +250,12 @@ async def fetch_day_ahead(target_date: date, region: str = "FI", *, token: str) 
     loop = asyncio.get_running_loop()
     xml_text = await loop.run_in_executor(None, _fetch_sync, target_date, region, token)
     parsed = _parse_xml(xml_text, target_date)
-    logger.debug("ENTSO-E %s %s: %d hourly rows", region, target_date, len(parsed["rows"]))
+    rows = parsed["rows"]
+    logger.debug(
+        "ENTSO-E %s %s: %d points, resolution=%s min",
+        region,
+        target_date,
+        len(rows),
+        rows[0]["interval_minutes"] if rows else "n/a",
+    )
     return parsed

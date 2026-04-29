@@ -21,7 +21,7 @@ import asyncpg
 
 from app.common.config import settings
 from app.ingestion.entsoe_client import fetch_day_ahead
-from app.normalization.energy_price import normalize_nordpool_response
+from app.normalization.energy_price import normalize_day_ahead_response
 from app.storage import repository as repo
 from app.storage.repository import AnyConn
 
@@ -46,7 +46,7 @@ async def _ingest_region(
         logger.exception("ENTSO-E fetch failed for region=%s date=%s", region_code, target_date)
         return 0
 
-    prices = normalize_nordpool_response(raw, region=region, ingest_run_id=run_id)
+    prices = normalize_day_ahead_response(raw, region=region, ingest_run_id=run_id)
     if not prices:
         logger.warning("No price rows returned for region=%s date=%s", region_code, target_date)
         return 0

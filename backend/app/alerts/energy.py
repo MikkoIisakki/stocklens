@@ -1,6 +1,6 @@
 """Electricity threshold alert engine.
 
-Pure domain logic — no I/O. Given a list of hourly price rows and a list of
+Pure domain logic — no I/O. Given a list of interval price rows and a list of
 alert rules, returns alert dicts for any rules whose threshold is breached.
 
 Callers (ingest pipeline) are responsible for persisting the returned dicts
@@ -18,10 +18,11 @@ def check_threshold_alerts(
     rules: list[dict[str, Any]],
     price_date: date,
 ) -> list[dict[str, Any]]:
-    """Evaluate threshold rules against hourly price data for one date.
+    """Evaluate threshold rules against interval price data for one date.
 
     Args:
-        prices: List of dicts with at least ``hour`` and ``total_c_kwh`` keys.
+        prices: Interval price dicts with at least ``interval_start`` and
+            ``total_c_kwh`` keys (any cadence — 15-min, hourly, daily).
         rules:  Active energy_alert_rule rows (must have id, region_code,
                 threshold_c_kwh, active).
         price_date: The delivery date the prices belong to.
@@ -33,10 +34,9 @@ def check_threshold_alerts(
     if not prices or not rules:
         return []
 
-    # Find peak price across all hours
     peak_row = max(prices, key=lambda r: r["total_c_kwh"])
     peak_c_kwh: Decimal = peak_row["total_c_kwh"]
-    peak_hour: int = peak_row["hour"]
+    peak_interval_start = peak_row["interval_start"]
 
     alerts = []
     for rule in rules:
@@ -50,7 +50,7 @@ def check_threshold_alerts(
                     "region_code": rule["region_code"],
                     "price_date": price_date,
                     "peak_c_kwh": peak_c_kwh,
-                    "peak_hour": peak_hour,
+                    "peak_interval_start": peak_interval_start,
                     "threshold_c_kwh": threshold,
                 }
             )
