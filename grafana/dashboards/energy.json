@@ -15,7 +15,7 @@
       }
     ]
   },
-  "description": "Electricity domain — 24h hourly prices, 30-day trend, cheapest hours ranking. Data: energy_price table populated by Nordpool ingest (task 2.2).",
+  "description": "Electricity domain — 24h interval prices, 30-day trend, cheapest intervals ranking. Data: energy_price table populated by ENTSO-E ingest (task 2.2). Per ADR-005 each row is one interval (15-min or hourly depending on zone).",
   "editable": false,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -117,7 +117,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "SELECT\n  (price_date + (hour || ' hours')::interval) AS time,\n  total_c_kwh AS \"total c/kWh\"\nFROM energy_price\nWHERE region_code = '$region'\n  AND price_date = CASE\n    WHEN '$date' = 'today'    THEN CURRENT_DATE\n    WHEN '$date' = 'tomorrow' THEN CURRENT_DATE + INTERVAL '1 day'\n    ELSE '$date'::date\n  END\nORDER BY hour",
+          "rawSql": "SELECT\n  interval_start AS time,\n  total_c_kwh AS \"total c/kWh\"\nFROM energy_price\nWHERE region_code = '$region'\n  AND (interval_start AT TIME ZONE 'UTC')::date = CASE\n    WHEN '$date' = 'today'    THEN CURRENT_DATE\n    WHEN '$date' = 'tomorrow' THEN CURRENT_DATE + INTERVAL '1 day'\n    ELSE '$date'::date\n  END\nORDER BY interval_start",
           "refId": "A",
           "sql": {
             "columns": [],
@@ -126,7 +126,7 @@
           }
         }
       ],
-      "title": "24h hourly prices — $region on $date",
+      "title": "24h interval prices — $region on $date",
       "type": "timeseries"
     },
     {
@@ -134,7 +134,7 @@
         "type": "postgres",
         "uid": "pulse-postgres"
       },
-      "description": "Peak hour and price for the selected date and region.",
+      "description": "Peak interval and price for the selected date and region.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -164,16 +164,16 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "peak_hour"
+              "options": "peak_interval"
             },
             "properties": [
               {
                 "id": "unit",
-                "value": "short"
+                "value": "time:HH:mm"
               },
               {
                 "id": "displayName",
-                "value": "Peak hour (0–23)"
+                "value": "Peak interval (UTC)"
               },
               {
                 "id": "thresholds",
@@ -258,7 +258,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "WITH target AS (\n  SELECT CASE\n    WHEN '$date' = 'today'    THEN CURRENT_DATE\n    WHEN '$date' = 'tomorrow' THEN CURRENT_DATE + INTERVAL '1 day'\n    ELSE '$date'::date\n  END AS d\n)\nSELECT\n  (SELECT hour        FROM energy_price, target WHERE region_code = '$region' AND price_date = target.d ORDER BY total_c_kwh DESC LIMIT 1) AS peak_hour,\n  (SELECT total_c_kwh FROM energy_price, target WHERE region_code = '$region' AND price_date = target.d ORDER BY total_c_kwh DESC LIMIT 1) AS peak_price_c_kwh,\n  (SELECT total_c_kwh FROM energy_price, target WHERE region_code = '$region' AND price_date = target.d ORDER BY total_c_kwh ASC  LIMIT 1) AS off_peak_price_c_kwh",
+          "rawSql": "WITH target AS (\n  SELECT CASE\n    WHEN '$date' = 'today'    THEN CURRENT_DATE\n    WHEN '$date' = 'tomorrow' THEN CURRENT_DATE + INTERVAL '1 day'\n    ELSE '$date'::date\n  END AS d\n)\nSELECT\n  (SELECT interval_start FROM energy_price, target WHERE region_code = '$region' AND (interval_start AT TIME ZONE 'UTC')::date = target.d ORDER BY total_c_kwh DESC LIMIT 1) AS peak_interval,\n  (SELECT total_c_kwh    FROM energy_price, target WHERE region_code = '$region' AND (interval_start AT TIME ZONE 'UTC')::date = target.d ORDER BY total_c_kwh DESC LIMIT 1) AS peak_price_c_kwh,\n  (SELECT total_c_kwh    FROM energy_price, target WHERE region_code = '$region' AND (interval_start AT TIME ZONE 'UTC')::date = target.d ORDER BY total_c_kwh ASC  LIMIT 1) AS off_peak_price_c_kwh",
           "refId": "A",
           "sql": {
             "columns": [],
@@ -402,7 +402,7 @@
           "editorMode": "code",
           "format": "time_series",
           "rawQuery": true,
-          "rawSql": "SELECT\n  price_date AS time,\n  MAX(total_c_kwh) AS peak,\n  AVG(total_c_kwh) AS mean,\n  MIN(total_c_kwh) AS off_peak\nFROM energy_price\nWHERE region_code = '$region'\n  AND price_date >= CURRENT_DATE - INTERVAL '30 days'\nGROUP BY price_date\nORDER BY price_date",
+          "rawSql": "SELECT\n  ((interval_start AT TIME ZONE 'UTC')::date)::timestamptz AS time,\n  MAX(total_c_kwh) AS peak,\n  AVG(total_c_kwh) AS mean,\n  MIN(total_c_kwh) AS off_peak\nFROM energy_price\nWHERE region_code = '$region'\n  AND (interval_start AT TIME ZONE 'UTC')::date >= CURRENT_DATE - INTERVAL '30 days'\nGROUP BY ((interval_start AT TIME ZONE 'UTC')::date)\nORDER BY ((interval_start AT TIME ZONE 'UTC')::date)",
           "refId": "A",
           "sql": {
             "columns": [],
@@ -419,7 +419,7 @@
         "type": "postgres",
         "uid": "pulse-postgres"
       },
-      "description": "Top 5 cheapest hours for the selected region and date, ascending by total c/kWh. Mirrors the /v1/energy/cheap-hours endpoint logic.",
+      "description": "Top 5 cheapest intervals for the selected region and date, ascending by total c/kWh. Mirrors the /v1/energy/cheap-intervals endpoint logic.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -447,16 +447,16 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "hour"
+              "options": "interval_start"
             },
             "properties": [
               {
                 "id": "custom.width",
-                "value": 120
+                "value": 200
               },
               {
                 "id": "displayName",
-                "value": "Hour (local)"
+                "value": "Interval start (UTC)"
               }
             ]
           },
@@ -540,7 +540,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT\n  hour,\n  total_c_kwh,\n  spot_c_kwh\nFROM energy_price\nWHERE region_code = '$region'\n  AND price_date = CASE\n    WHEN '$date' = 'today'    THEN CURRENT_DATE\n    WHEN '$date' = 'tomorrow' THEN CURRENT_DATE + INTERVAL '1 day'\n    ELSE '$date'::date\n  END\nORDER BY total_c_kwh ASC\nLIMIT 5",
+          "rawSql": "SELECT\n  interval_start,\n  total_c_kwh,\n  spot_c_kwh\nFROM energy_price\nWHERE region_code = '$region'\n  AND (interval_start AT TIME ZONE 'UTC')::date = CASE\n    WHEN '$date' = 'today'    THEN CURRENT_DATE\n    WHEN '$date' = 'tomorrow' THEN CURRENT_DATE + INTERVAL '1 day'\n    ELSE '$date'::date\n  END\nORDER BY total_c_kwh ASC\nLIMIT 5",
           "refId": "A",
           "sql": {
             "columns": [],
@@ -549,7 +549,7 @@
           }
         }
       ],
-      "title": "Cheapest hours — $region on $date",
+      "title": "Cheapest intervals — $region on $date",
       "type": "table"
     }
   ],
@@ -588,7 +588,7 @@
           "text": "today",
           "value": "today"
         },
-        "description": "Target date for 24h chart and cheap-hour ranking. Accepts 'today', 'tomorrow', or YYYY-MM-DD.",
+        "description": "Target date for 24h chart and cheap-intervals ranking. Accepts 'today', 'tomorrow', or YYYY-MM-DD.",
         "hide": 0,
         "label": "Date",
         "name": "date",
