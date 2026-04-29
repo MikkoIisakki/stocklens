@@ -41,7 +41,7 @@ Goal: reliable daily data ingestion, storage with full audit trail, queryable vi
 | 2.6 | REST API — electricity prices + alerts | ✅ Done | `GET /v1/energy/prices`, `GET /v1/energy/alerts` (interval shape per ADR-005) |
 | 2.7 | "Cheap intervals" ranking | ✅ Done | `GET /v1/energy/cheap-intervals` returns intervals ranked ascending by total_c_kwh (renamed from cheap-hours in ADR-005) |
 | 2.8 | Grafana energy dashboard | ✅ Done | `grafana/dashboards/energy.json`: 24h prices, peak/off-peak stat, 30-day trend, cheapest-interval table; Postgres datasource provisioning + docker-compose service |
-| 2.9 | Health check extension | ⬜ Todo | Energy ingest staleness (>25h) reflected in `/v1/health/ready` |
+| 2.9 | Health check extension | ✅ Done | `/v1/health/ready` now reports per-market freshness (ENERGY/FI/US); status=degraded if any market is stale (>25h) or has never run |
 
 ### Phase 2 Definition of Done
 
