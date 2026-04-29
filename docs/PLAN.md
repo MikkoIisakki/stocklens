@@ -60,7 +60,7 @@ Goal: reliable daily data ingestion, storage with full audit trail, queryable vi
 
 | # | Task | Status | Notes |
 |---|---|---|---|
-| 3.1 | Domain config system | ⬜ Todo | `config/domains/energy.yaml`, `stocks.yaml`, `crypto.yaml` — schema, data source, scoring weights |
+| 3.1 | Domain config system | ✅ Done | `config/domains/energy.yaml` + typed loader `app.common.domain.load_domain_config`. Scheduler reads cron from config. Stocks/crypto YAMLs land with their phases. See ADR-006. |
 | 3.2 | Expo white-label mobile app shell | ⬜ Todo | One codebase, one `app.json` per domain via EAS build profiles |
 | 3.3 | Auth layer (JWT / API key) | ⬜ Todo | Prerequisite for mobile; shared across all domain apps |
 | 3.4 | Push notification infrastructure | ⬜ Todo | FCM/APNs + device registration endpoint |
