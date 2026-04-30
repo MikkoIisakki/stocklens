@@ -66,4 +66,15 @@ npm install
 npm run dev    # http://localhost:3001
 ```
 
+## Mobile shell
+
+`mobile/` is the Expo (React Native) white-label app. Same domain-config
+pattern as web; see `mobile/README.md` and ADR-009.
+
+```bash
+cd mobile
+npm install
+PULSE_DOMAIN=energy npx expo start
+```
+
 See [docs/PLAN.md](docs/PLAN.md) for the full project plan and task status.

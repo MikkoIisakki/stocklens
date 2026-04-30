@@ -61,7 +61,7 @@ Goal: reliable daily data ingestion, storage with full audit trail, queryable vi
 | # | Task | Status | Notes |
 |---|---|---|---|
 | 3.1 | Domain config system | ✅ Done | `config/domains/energy.yaml` + typed loader `app.common.domain.load_domain_config`. Scheduler reads cron from config. Stocks/crypto YAMLs land with their phases. See ADR-006. |
-| 3.2 | Expo white-label mobile app shell | ⬜ Todo | One codebase, one `app.json` per domain via EAS build profiles |
+| 3.2 | Expo white-label mobile app shell | ✅ Done | `mobile/` — Expo SDK 52 + Expo Router. `app.config.ts` loads `config/domains/<name>.yaml` at build time and injects via `Constants.expoConfig.extra`. Three screens (prices, cheap-intervals, alerts). API key is build-time bootstrap (see ADR-009 for the migration path to per-install tokens). Separate `mobile-ci.yml` workflow runs typecheck. |
 | 3.3 | Auth layer (JWT / API key) | ✅ Done | API key (SHA-256 hashed) on `/v1/energy/*` and `/v1/assets/*`; `/v1/health/*` open. CLI: `python -m app.tools.create_api_key`. JWT-for-users deferred until per-user state exists. See ADR-007. |
 | 3.4 | Push notification infrastructure | ⬜ Todo | FCM/APNs + device registration endpoint |
 | 3.5 | Next.js white-label web shell | ✅ Done | `web/` — Next.js 15 + RSC + Tailwind. `PULSE_DOMAIN` env var picks the YAML; `PULSE_API_KEY` server-side only. Pages: prices (chart+table), cheap-intervals, alerts. Separate `web-ci.yml` workflow. See ADR-008. |
