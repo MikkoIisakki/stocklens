@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Branded primary; can be overridden per domain at deploy time. */
+  --brand-primary: 22 78 138;        /* energy default: deep blue */
+  --brand-foreground: 255 255 255;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 antialiased;
+}

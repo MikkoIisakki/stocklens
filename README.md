@@ -54,4 +54,16 @@ make fresh      # wipe everything and start clean
 make shell-db   # open psql in the db container
 ```
 
+## Web shell
+
+`web/` is the Next.js 15 white-label app. Configure via `web/.env.local`
+(see `web/README.md`); one build serves any domain by setting
+`PULSE_DOMAIN`.
+
+```bash
+cd web
+npm install
+npm run dev    # http://localhost:3001
+```
+
 See [docs/PLAN.md](docs/PLAN.md) for the full project plan and task status.

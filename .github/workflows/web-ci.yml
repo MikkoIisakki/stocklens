@@ -1,0 +1,51 @@
+name: Web CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "web/**"
+      - "config/domains/**"
+      - ".github/workflows/web-ci.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "web/**"
+      - "config/domains/**"
+      - ".github/workflows/web-ci.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+        # NOTE: npm caching is intentionally off until package-lock.json is
+        # committed (after the first successful install). Re-enable with:
+        #   cache: "npm"
+        #   cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Build
+        env:
+          PULSE_DOMAIN: energy
+          # Build only — no API calls during `next build`. These placeholders
+          # are needed so the build doesn't fail on env-var validation.
+          PULSE_API_BASE_URL: http://localhost:8000
+          PULSE_API_KEY: pulse_ci_placeholder_not_used_at_build_time
+        run: npm run build
