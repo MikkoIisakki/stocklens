@@ -27,13 +27,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-        # NOTE: npm caching is intentionally off until package-lock.json is
-        # committed (after the first successful install). Re-enable with:
-        #   cache: "npm"
-        #   cache-dependency-path: web/package-lock.json
+          cache: "npm"
+          cache-dependency-path: web/package-lock.json
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Lint
         run: npm run lint
