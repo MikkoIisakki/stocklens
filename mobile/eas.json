@@ -1,0 +1,51 @@
+{
+  "cli": {
+    "version": ">= 13.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "channel": "development",
+      "env": {
+        "PULSE_DOMAIN": "energy"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "channel": "preview",
+      "ios": {
+        "simulator": true
+      },
+      "env": {
+        "PULSE_DOMAIN": "energy"
+      }
+    },
+    "production": {
+      "channel": "production",
+      "autoIncrement": true
+    },
+    "energy-prod": {
+      "extends": "production",
+      "env": {
+        "PULSE_DOMAIN": "energy"
+      }
+    },
+    "crypto-prod": {
+      "extends": "production",
+      "env": {
+        "PULSE_DOMAIN": "crypto"
+      }
+    },
+    "stocks-prod": {
+      "extends": "production",
+      "env": {
+        "PULSE_DOMAIN": "stocks"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

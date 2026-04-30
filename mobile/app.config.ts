@@ -6,13 +6,15 @@ import yaml from "js-yaml";
 /**
  * Build-time Expo config. Reads `config/domains/<name>.yaml` from the repo
  * root and injects the parsed object into Constants.expoConfig.extra so
- * runtime code can read branding and region metadata without bundling
- * the YAML loader. Mirrors the web shell's `web/src/lib/domain.ts` (ADR-008).
+ * runtime code can read branding without bundling the YAML loader. Also
+ * derives the iOS bundleIdentifier, Android package, and Expo slug from
+ * the domain name so each branded app gets its own App Store entry.
  *
  * Selecting which domain to build:
  *   PULSE_DOMAIN=energy npx expo start
+ *   PULSE_DOMAIN=energy eas build --profile energy-prod
  *
- * See ADR-009 for the full rationale and the API-key trade-off.
+ * See ADR-009 (shell) and ADR-010 (EAS pipeline).
  */
 
 interface RegionConfig {
@@ -30,6 +32,11 @@ interface DomainConfig {
 }
 
 const REPO_ROOT = path.resolve(__dirname, "..");
+
+// Bundle / package prefix. Override per project before submitting to the
+// stores; Apple and Google require globally unique identifiers tied to
+// your developer account.
+const BUNDLE_PREFIX = process.env.PULSE_BUNDLE_PREFIX ?? "com.example.pulse";
 
 function loadDomainConfig(): DomainConfig {
   const name = process.env.PULSE_DOMAIN;
@@ -68,16 +75,38 @@ function loadDomainConfig(): DomainConfig {
 
 export default (): ExpoConfig => {
   const domain = loadDomainConfig();
+  const bundleId = `${BUNDLE_PREFIX}.${domain.name}`;
+
   return {
     name: domain.display_name,
     slug: `pulse-${domain.name}`,
     version: "0.1.0",
+    scheme: `pulse-${domain.name}`,
+    orientation: "portrait",
+    userInterfaceStyle: "light",
+    newArchEnabled: true,
+    ios: {
+      supportsTablet: true,
+      bundleIdentifier: bundleId,
+    },
+    android: {
+      package: bundleId,
+      adaptiveIcon: {
+        backgroundColor: "#164e8a",
+      },
+    },
+    web: {
+      bundler: "metro",
+    },
+    plugins: ["expo-router"],
+    experiments: {
+      typedRoutes: true,
+    },
     extra: {
       domain,
       // API URL + key are read from EXPO_PUBLIC_* so EAS build profiles can
       // override them per environment. The "PUBLIC" prefix is honest: these
-      // values WILL be in the JS bundle. See ADR-009 for the migration path
-      // to per-install device-registered keys.
+      // values WILL be in the JS bundle. See ADR-009.
       apiBaseUrl: process.env.EXPO_PUBLIC_API_BASE_URL ?? "http://localhost:8000",
       apiKey: process.env.EXPO_PUBLIC_API_KEY ?? "",
     },

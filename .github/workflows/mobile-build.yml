@@ -1,0 +1,91 @@
+name: Mobile Build (EAS)
+
+# Triggered manually for ad-hoc preview builds, or by a `mobile-v*` git tag
+# for production releases. Builds run on EAS's cloud, not the GitHub runner.
+#
+# Prerequisites (one-time setup):
+#   1. Sign up at https://expo.dev and run `npx eas login` locally.
+#   2. Inside `mobile/`, run `npx eas init` to register each branded slug
+#      (pulse-energy, pulse-crypto, pulse-stocks).
+#   3. Run `npx eas credentials` once per platform per profile to provision
+#      iOS certs and Android keystores.
+#   4. In Expo dashboard → Access Tokens, mint a CI token and store it as
+#      the EXPO_TOKEN repository secret in GitHub.
+#   5. Set EXPO_PUBLIC_API_BASE_URL and EXPO_PUBLIC_API_KEY as repository
+#      secrets so the build embeds them via `app.config.ts`.
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: "EAS build profile"
+        required: true
+        default: "preview"
+        type: choice
+        options:
+          - development
+          - preview
+          - energy-prod
+          - crypto-prod
+          - stocks-prod
+      platform:
+        description: "Target platform"
+        required: true
+        default: "all"
+        type: choice
+        options:
+          - ios
+          - android
+          - all
+  push:
+    tags:
+      - "mobile-v*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Set up EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Resolve build inputs
+        id: inputs
+        run: |
+          # Tag-triggered builds default to energy-prod / all platforms.
+          # Manual dispatch uses the form inputs.
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "profile=${{ github.event.inputs.profile }}" >> "$GITHUB_OUTPUT"
+            echo "platform=${{ github.event.inputs.platform }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "profile=energy-prod" >> "$GITHUB_OUTPUT"
+            echo "platform=all" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: EAS build
+        env:
+          # Forwarded into app.config.ts via process.env.
+          EXPO_PUBLIC_API_BASE_URL: ${{ secrets.EXPO_PUBLIC_API_BASE_URL }}
+          EXPO_PUBLIC_API_KEY: ${{ secrets.EXPO_PUBLIC_API_KEY }}
+        run: |
+          eas build \
+            --profile "${{ steps.inputs.outputs.profile }}" \
+            --platform "${{ steps.inputs.outputs.platform }}" \
+            --non-interactive \
+            --no-wait

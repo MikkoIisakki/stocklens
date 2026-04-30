@@ -48,6 +48,33 @@ npm run android     # expo start --android
 npm run web         # expo start --web
 ```
 
+## Production builds (EAS)
+
+EAS-driven builds for the App Store / Play Store. See ADR-010.
+
+```bash
+# One-time setup per branded slug:
+npx eas login
+PULSE_DOMAIN=energy npx eas init               # registers pulse-energy
+PULSE_DOMAIN=energy npx eas credentials        # provisions iOS certs / Android keystore
+
+# Manual local build:
+PULSE_DOMAIN=energy EXPO_PUBLIC_API_BASE_URL=https://... \
+EXPO_PUBLIC_API_KEY=pulse_... \
+npx eas build --profile energy-prod --platform all
+```
+
+CI also runs the same flow:
+
+- `.github/workflows/mobile-build.yml` — manually dispatch a build with a
+  profile of your choice, or push a `mobile-v*` tag for the production
+  release path. Requires `EXPO_TOKEN`, `EXPO_PUBLIC_API_BASE_URL`, and
+  `EXPO_PUBLIC_API_KEY` repository secrets.
+
+Adding a new branded build = `eas.json` profile entry + a YAML in
+`config/domains/`. Override the bundle ID prefix via
+`PULSE_BUNDLE_PREFIX` to a domain you own.
+
 ## Why is the API key in the bundle?
 
 Honest v1 trade-off documented in ADR-009: the key is a build-time
